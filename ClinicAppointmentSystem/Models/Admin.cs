@@ -24,6 +24,7 @@ namespace ClinicAppointmentSystem.Models
         // Navigation property
         public User User { get; set; }
     }
+    //flaflsakflkalkfs
 }
 
 //hellooo
