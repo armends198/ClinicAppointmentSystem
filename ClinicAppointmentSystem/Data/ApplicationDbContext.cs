@@ -30,8 +30,67 @@ namespace ClinicAppointmentSystem.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure relationships and constraints here
-            // We'll add this in the next step
+            // Seed data for AppointmentStatuses
+            modelBuilder.Entity<AppointmentStatus>().HasData(
+                new AppointmentStatus
+                {
+                    StatusId = 1,
+                    StatusName = "Pending",
+                    Description = "Appointment is awaiting confirmation"
+                },
+                new AppointmentStatus
+                {
+                    StatusId = 2,
+                    StatusName = "Approved",
+                    Description = "Appointment has been confirmed"
+                },
+                new AppointmentStatus
+                {
+                    StatusId = 3,
+                    StatusName = "Completed",
+                    Description = "Appointment has been completed"
+                },
+                new AppointmentStatus
+                {
+                    StatusId = 4,
+                    StatusName = "Cancelled",
+                    Description = "Appointment has been cancelled"
+                }
+            );
+
+            // Seed data for Specializations
+            modelBuilder.Entity<Specialization>().HasData(
+                new Specialization
+                {
+                    SpecializationId = 1,
+                    Name = "Cardiology",
+                    Description = "Heart and cardiovascular system"
+                },
+                new Specialization
+                {
+                    SpecializationId = 2,
+                    Name = "Dermatology",
+                    Description = "Skin, hair, and nails"
+                },
+                new Specialization
+                {
+                    SpecializationId = 3,
+                    Name = "Pediatrics",
+                    Description = "Medical care for children"
+                },
+                new Specialization
+                {
+                    SpecializationId = 4,
+                    Name = "Orthopedics",
+                    Description = "Bones, joints, and muscles"
+                },
+                new Specialization
+                {
+                    SpecializationId = 5,
+                    Name = "General Practice",
+                    Description = "Primary care and general medicine"
+                }
+            );
         }
     }
 }

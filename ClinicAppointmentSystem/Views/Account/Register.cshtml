@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Create Your Account</h3>
+                    <p class="mb-0 small">Choose how you want to register</p>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-person-heart fs-1 text-primary mb-3"></i>
+                                    <h4 class="card-title">Register as Patient</h4>
+                                    <p class="card-text">Book appointments, manage your health records, and connect with doctors.</p>
+                                    <a asp-action="RegisterPatient" class="btn btn-primary btn-lg mt-3">Register as Patient</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-hospital fs-1 text-success mb-3"></i>
+                                    <h4 class="card-title">Register as Doctor</h4>
+                                    <p class="card-text">Manage your schedule, view patient appointments, and provide medical care.</p>
+                                    <a asp-action="RegisterDoctor" class="btn btn-success btn-lg mt-3">Register as Doctor</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <p>Already have an account? <a asp-action="Login">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

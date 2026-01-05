@@ -1,0 +1,127 @@
+﻿@model ClinicAppointmentSystem.Models.Patient
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>My Profile</h2>
+                <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">First Name:</label>
+                            <p>@Model.User.FirstName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Last Name:</label>
+                            <p>@Model.User.LastName</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Email:</label>
+                            <p>@Model.User.Email</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Phone Number:</label>
+                            <p>@(Model.User.PhoneNumber ?? "Not provided")</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date of Birth:</label>
+                            <p>@Model.DateOfBirth.ToString("MMMM dd, yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Gender:</label>
+                            <p>@Model.Gender</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Address:</label>
+                            <p>@(Model.Address ?? "Not provided")</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3">Medical Information</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Blood Type:</label>
+                            <p>@(Model.BloodType ?? "Not provided")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Allergies:</label>
+                            <p>@(Model.Allergies ?? "None reported")</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3">Emergency Contact</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Contact Name:</label>
+                            <p>@(Model.EmergencyContactName ?? "Not provided")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Contact Phone:</label>
+                            <p>@(Model.EmergencyContactPhone ?? "Not provided")</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button class="btn btn-primary" disabled>Edit Profile (Coming Soon)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">Book Appointment</a>
+                        <a href="#" class="btn btn-outline-success">View Appointments</a>
+                        <a href="#" class="btn btn-outline-info">Medical History</a>
+                        <a asp-action="Logout" asp-controller="Account" class="btn btn-outline-danger">Logout</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">Account Status</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                    <p><strong>Member Since:</strong> @Model.CreatedAt.ToString("MMMM yyyy")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
