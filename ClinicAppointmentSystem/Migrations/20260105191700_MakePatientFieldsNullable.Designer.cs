@@ -3,6 +3,7 @@ using System;
 using ClinicAppointmentSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicAppointmentSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105191700_MakePatientFieldsNullable")]
+    partial class MakePatientFieldsNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -114,32 +117,6 @@ namespace ClinicAppointmentSystem.Migrations
                     b.HasKey("StatusId");
 
                     b.ToTable("AppointmentStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            StatusId = 1,
-                            Description = "Appointment is awaiting confirmation",
-                            StatusName = "Pending"
-                        },
-                        new
-                        {
-                            StatusId = 2,
-                            Description = "Appointment has been confirmed",
-                            StatusName = "Approved"
-                        },
-                        new
-                        {
-                            StatusId = 3,
-                            Description = "Appointment has been completed",
-                            StatusName = "Completed"
-                        },
-                        new
-                        {
-                            StatusId = 4,
-                            Description = "Appointment has been cancelled",
-                            StatusName = "Cancelled"
-                        });
                 });
 
             modelBuilder.Entity("ClinicAppointmentSystem.Models.AuditLog", b =>
@@ -490,38 +467,6 @@ namespace ClinicAppointmentSystem.Migrations
                     b.HasKey("SpecializationId");
 
                     b.ToTable("Specializations");
-
-                    b.HasData(
-                        new
-                        {
-                            SpecializationId = 1,
-                            Description = "Heart and cardiovascular system",
-                            Name = "Cardiology"
-                        },
-                        new
-                        {
-                            SpecializationId = 2,
-                            Description = "Skin, hair, and nails",
-                            Name = "Dermatology"
-                        },
-                        new
-                        {
-                            SpecializationId = 3,
-                            Description = "Medical care for children",
-                            Name = "Pediatrics"
-                        },
-                        new
-                        {
-                            SpecializationId = 4,
-                            Description = "Bones, joints, and muscles",
-                            Name = "Orthopedics"
-                        },
-                        new
-                        {
-                            SpecializationId = 5,
-                            Description = "Primary care and general medicine",
-                            Name = "General Practice"
-                        });
                 });
 
             modelBuilder.Entity("ClinicAppointmentSystem.Models.TimeSlot", b =>
