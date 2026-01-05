@@ -25,3 +25,5 @@ namespace ClinicAppointmentSystem.Models
         public User User { get; set; }
     }
 }
+
+//hellooo
