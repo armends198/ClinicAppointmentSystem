@@ -19,19 +19,19 @@ namespace ClinicAppointmentSystem.Models
         public string Gender { get; set; }
 
         [MaxLength(255)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         [MaxLength(100)]
-        public string EmergencyContactName { get; set; }
+        public string? EmergencyContactName { get; set; }
 
         [MaxLength(20)]
-        public string EmergencyContactPhone { get; set; }
+        public string? EmergencyContactPhone { get; set; }
 
         [MaxLength(10)]
-        public string BloodType { get; set; }
+        public string? BloodType { get; set; }
 
         [MaxLength(500)]
-        public string Allergies { get; set; }
+        public string? Allergies { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
