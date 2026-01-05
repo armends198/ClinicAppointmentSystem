@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ClinicAppointmentSystem.Data;
 using Microsoft.EntityFrameworkCore;
+using ClinicAppointmentSystem.Models;
 
 namespace ClinicAppointmentSystem.Controllers
 {
@@ -89,6 +90,143 @@ namespace ClinicAppointmentSystem.Controllers
             }
 
             return View(doctor);
+        }
+
+        // GET: Doctor/ManageSchedule
+        [HttpGet]
+        public async Task<IActionResult> ManageSchedule()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Load data first, then sort in memory (SQLite doesn't support TimeSpan in OrderBy)
+            var existingSchedule = await _context.DoctorWorkingHours
+                .Where(w => w.DoctorId == doctor.DoctorId)
+                .ToListAsync();
+
+            // Sort in memory
+            existingSchedule = existingSchedule
+                .OrderBy(w => w.DayOfWeek)
+                .ThenBy(w => w.StartTime)
+                .ToList();
+
+            var viewModel = new ViewModels.ManageScheduleViewModel
+            {
+                ExistingSchedule = existingSchedule,
+                NewSchedule = new ViewModels.DoctorWorkingHoursViewModel()
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Doctor/AddWorkingHours
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddWorkingHours(ViewModels.DoctorWorkingHoursViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Validate that end time is after start time
+                if (model.EndTime <= model.StartTime)
+                {
+                    TempData["ErrorMessage"] = $"End time ({model.EndTime}) must be after start time ({model.StartTime}).";
+                    return RedirectToAction("ManageSchedule");
+                }
+
+                // Check for overlapping schedule
+                var allSchedules = await _context.DoctorWorkingHours
+                    .Where(w => w.DoctorId == doctor.DoctorId
+                           && w.DayOfWeek == model.DayOfWeek
+                           && w.IsActive)
+                    .ToListAsync();
+
+                var overlapping = allSchedules.Any(w =>
+                    (model.StartTime >= w.StartTime && model.StartTime < w.EndTime)
+                    || (model.EndTime > w.StartTime && model.EndTime <= w.EndTime)
+                    || (model.StartTime <= w.StartTime && model.EndTime >= w.EndTime));
+
+                if (overlapping)
+                {
+                    TempData["ErrorMessage"] = "This time slot overlaps with an existing schedule.";
+                    return RedirectToAction("ManageSchedule");
+                }
+
+                var workingHours = new DoctorWorkingHours
+                {
+                    DoctorId = doctor.DoctorId,
+                    DayOfWeek = model.DayOfWeek,
+                    StartTime = model.StartTime,
+                    EndTime = model.EndTime,
+                    IsActive = model.IsActive,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.DoctorWorkingHours.Add(workingHours);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Working hours added successfully!";
+                return RedirectToAction("ManageSchedule");
+            }
+
+            TempData["ErrorMessage"] = "Please fill in all required fields.";
+            return RedirectToAction("ManageSchedule");
+        }
+
+        // POST: Doctor/DeleteWorkingHours
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteWorkingHours(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var workingHours = await _context.DoctorWorkingHours
+                .FirstOrDefaultAsync(w => w.WorkingHoursId == id && w.DoctorId == doctor.DoctorId);
+
+            if (workingHours != null)
+            {
+                _context.DoctorWorkingHours.Remove(workingHours);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Working hours deleted successfully!";
+            }
+
+            return RedirectToAction("ManageSchedule");
         }
     }
 }
