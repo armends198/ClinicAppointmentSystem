@@ -243,5 +243,38 @@ namespace ClinicAppointmentSystem.Controllers
 
             return RedirectToAction("ManageSchedule");
         }
+
+        // POST: Doctor/GenerateTimeSlots
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateTimeSlots()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                var generator = new Helpers.TimeSlotGenerator(_context);
+                await generator.GenerateTimeSlotsForDoctor(doctor.DoctorId, 30);
+                TempData["SuccessMessage"] = "Time slots generated successfully for the next 30 days!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error generating time slots: {ex.Message}";
+            }
+
+            return RedirectToAction("ManageSchedule");
+        }
     }
 }

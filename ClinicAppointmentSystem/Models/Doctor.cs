@@ -33,5 +33,7 @@ namespace ClinicAppointmentSystem.Models
         // Navigation properties
         public User User { get; set; }
         public Specialization Specialization { get; set; }
+        public ICollection<DoctorWorkingHours> WorkingHours { get; set; }
+        public ICollection<Appointment> Appointments { get; set; }
     }
 }

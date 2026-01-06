@@ -1,0 +1,235 @@
+﻿@model ClinicAppointmentSystem.ViewModels.BookAppointmentViewModel
+
+@{
+    ViewData["Title"] = "Book Appointment";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-calendar-plus"></i> Book an Appointment</h2>
+                <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Select Appointment Details</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="BookAppointment" method="post" id="bookingForm">
+                        <!-- Step 1: Select Specialization -->
+                        <div class="mb-4">
+                            <label for="specializationSelect" class="form-label fw-bold">
+                                <span class="badge bg-primary">1</span> Select Specialization
+                            </label>
+                            <select id="specializationSelect" name="SpecializationId" class="form-select" required>
+                                <option value="">-- Choose Specialization --</option>
+                                @foreach (var spec in Model.Specializations)
+                                {
+                                    <option value="@spec.SpecializationId">@spec.Name - @spec.Description</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Step 2: Select Doctor -->
+                        <div class="mb-4" id="doctorSection" style="display:none;">
+                            <label for="doctorSelect" class="form-label fw-bold">
+                                <span class="badge bg-primary">2</span> Select Doctor
+                            </label>
+                            <select id="doctorSelect" name="DoctorId" class="form-select" required>
+                                <option value="">-- Choose Doctor --</option>
+                            </select>
+                            <div id="doctorInfo" class="mt-2"></div>
+                        </div>
+
+                        <!-- Step 3: Select Date -->
+                        <div class="mb-4" id="dateSection" style="display:none;">
+                            <label for="dateSelect" class="form-label fw-bold">
+                                <span class="badge bg-primary">3</span> Select Date
+                            </label>
+                            <input type="date" id="dateSelect" name="SelectedDate" class="form-control"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")" required />
+                        </div>
+
+                        <!-- Step 4: Select Time Slot -->
+                        <div class="mb-4" id="slotSection" style="display:none;">
+                            <label class="form-label fw-bold">
+                                <span class="badge bg-primary">4</span> Select Time Slot
+                            </label>
+                            <div id="slotsContainer" class="row g-2">
+                                <p class="text-muted">Please select a date to see available time slots.</p>
+                            </div>
+                            <input type="hidden" id="timeSlotId" name="TimeSlotId" />
+                        </div>
+
+                        <!-- Step 5: Reason -->
+                        <div class="mb-4" id="reasonSection" style="display:none;">
+                            <label for="reason" class="form-label fw-bold">
+                                <span class="badge bg-primary">5</span> Reason for Visit (Optional)
+                            </label>
+                            <textarea id="reason" name="Reason" class="form-control" rows="3"
+                                      placeholder="Describe your symptoms or reason for the visit..."></textarea>
+                        </div>
+
+                        <div class="d-grid" id="submitSection" style="display:none;">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Booking Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div id="bookingSummary">
+                        <p class="text-muted">Fill in the form to see your booking details.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-clock-history"></i> Important Notes</h6>
+                </div>
+                <div class="card-body">
+                    <small>
+                        <ul class="mb-0">
+                            <li>Appointments require doctor approval</li>
+                            <li>You'll receive a notification once approved</li>
+                            <li>Please arrive 10 minutes early</li>
+                            <li>Bring your ID and insurance card</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedDoctor = null;
+        let selectedSlot = null;
+
+        // When specialization changes
+        $('#specializationSelect').change(function () {
+            const specId = $(this).val();
+            if (specId) {
+                $.get('/Patient/GetDoctorsBySpecialization', { specializationId: specId }, function (doctors) {
+                    $('#doctorSelect').empty().append('<option value="">-- Choose Doctor --</option>');
+                    doctors.forEach(function (doctor) {
+                        $('#doctorSelect').append(`<option value="${doctor.doctorId}" data-fee="${doctor.fee}">${doctor.name} - $${doctor.fee}</option>`);
+                    });
+                    $('#doctorSection').show();
+                    $('#dateSection, #slotSection, #reasonSection, #submitSection').hide();
+                    updateSummary();
+                });
+            }
+        });
+
+        // When doctor changes
+        $('#doctorSelect').change(function () {
+            selectedDoctor = {
+                id: $(this).val(),
+                name: $(this).find('option:selected').text().split(' - ')[0],
+                fee: $(this).find('option:selected').data('fee')
+            };
+            if (selectedDoctor.id) {
+                $('#dateSection').show();
+                $('#slotSection, #reasonSection, #submitSection').hide();
+                updateSummary();
+            }
+        });
+
+        // When date changes
+        $('#dateSelect').change(function () {
+            const doctorId = $('#doctorSelect').val();
+            const date = $(this).val();
+            if (doctorId && date) {
+                $.get('/Patient/GetAvailableSlots', { doctorId: doctorId, date: date }, function (slots) {
+                    $('#slotsContainer').empty();
+                    if (slots.length > 0) {
+                        slots.forEach(function (slot) {
+                            $('#slotsContainer').append(`
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-primary w-100 slot-btn"
+                                                    data-slot-id="${slot.timeSlotId}"
+                                                    data-start="${slot.startTime}"
+                                                    data-end="${slot.endTime}">
+                                                ${slot.startTime}
+                                            </button>
+                                        </div>
+                                    `);
+                        });
+                        $('#slotSection').show();
+                    } else {
+                        $('#slotsContainer').html('<p class="text-danger">No available slots for this date.</p>');
+                        $('#slotSection').show();
+                    }
+                    $('#reasonSection, #submitSection').hide();
+                });
+            }
+        });
+
+        // When slot is clicked
+        $(document).on('click', '.slot-btn', function () {
+            $('.slot-btn').removeClass('btn-primary').addClass('btn-outline-primary');
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+
+            selectedSlot = {
+                id: $(this).data('slot-id'),
+                start: $(this).data('start'),
+                end: $(this).data('end')
+            };
+            $('#timeSlotId').val(selectedSlot.id);
+            $('#reasonSection, #submitSection').show();
+            updateSummary();
+        });
+
+        function updateSummary() {
+            let summary = '<dl>';
+
+            const specName = $('#specializationSelect option:selected').text();
+            if (specName && specName !== '-- Choose Specialization --') {
+                summary += `<dt>Specialization:</dt><dd>${specName.split(' - ')[0]}</dd>`;
+            }
+
+            if (selectedDoctor) {
+                summary += `<dt>Doctor:</dt><dd>${selectedDoctor.name}</dd>`;
+                summary += `<dt>Consultation Fee:</dt><dd>$${selectedDoctor.fee}</dd>`;
+            }
+
+            const date = $('#dateSelect').val();
+            if (date) {
+                summary += `<dt>Date:</dt><dd>${new Date(date).toLocaleDateString()}</dd>`;
+            }
+
+            if (selectedSlot) {
+                summary += `<dt>Time:</dt><dd>${selectedSlot.start} - ${selectedSlot.end}</dd>`;
+            }
+
+            summary += '</dl>';
+            $('#bookingSummary').html(summary);
+        }
+    </script>
+}
