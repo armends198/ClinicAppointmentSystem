@@ -133,7 +133,7 @@ namespace ClinicAppointmentSystem.Controllers
         // POST: Doctor/AddWorkingHours
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddWorkingHours(ViewModels.DoctorWorkingHoursViewModel model)
+        public async Task<IActionResult> AddWorkingHours(int DayOfWeek, string StartTimeString, string EndTimeString, bool IsActive = true)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
@@ -150,20 +150,20 @@ namespace ClinicAppointmentSystem.Controllers
             }
 
             // Manual validation for string time fields
-            if (string.IsNullOrEmpty(model.StartTimeString) || string.IsNullOrEmpty(model.EndTimeString))
+            if (string.IsNullOrEmpty(StartTimeString) || string.IsNullOrEmpty(EndTimeString))
             {
                 TempData["ErrorMessage"] = "Please select both start and end times.";
                 return RedirectToAction("ManageSchedule");
             }
 
             // Parse times
-            if (!TimeSpan.TryParse(model.StartTimeString, out TimeSpan startTime))
+            if (!TimeSpan.TryParse(StartTimeString, out TimeSpan startTime))
             {
                 TempData["ErrorMessage"] = "Invalid start time format.";
                 return RedirectToAction("ManageSchedule");
             }
 
-            if (!TimeSpan.TryParse(model.EndTimeString, out TimeSpan endTime))
+            if (!TimeSpan.TryParse(EndTimeString, out TimeSpan endTime))
             {
                 TempData["ErrorMessage"] = "Invalid end time format.";
                 return RedirectToAction("ManageSchedule");
@@ -179,7 +179,7 @@ namespace ClinicAppointmentSystem.Controllers
             // Check for overlapping schedule
             var allSchedules = await _context.DoctorWorkingHours
                 .Where(w => w.DoctorId == doctor.DoctorId
-                       && w.DayOfWeek == model.DayOfWeek
+                       && w.DayOfWeek == DayOfWeek
                        && w.IsActive)
                 .ToListAsync();
 
@@ -198,10 +198,10 @@ namespace ClinicAppointmentSystem.Controllers
             var workingHours = new DoctorWorkingHours
             {
                 DoctorId = doctor.DoctorId,
-                DayOfWeek = model.DayOfWeek,
+                DayOfWeek = DayOfWeek,
                 StartTime = startTime,
                 EndTime = endTime,
-                IsActive = model.IsActive,
+                IsActive = IsActive,
                 CreatedAt = DateTime.UtcNow
             };
 

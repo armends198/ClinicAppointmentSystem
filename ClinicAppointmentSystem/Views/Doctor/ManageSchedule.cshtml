@@ -43,8 +43,8 @@
                 <div class="card-body">
                     <form asp-action="AddWorkingHours" method="post">
                         <div class="mb-3">
-                            <label asp-for="NewSchedule.DayOfWeek" class="form-label"></label>
-                            <select asp-for="NewSchedule.DayOfWeek" class="form-select">
+                            <label for="DayOfWeek" class="form-label">Day of Week</label>
+                            <select name="DayOfWeek" id="DayOfWeek" class="form-select" required>
                                 <option value="">-- Select Day --</option>
                                 <option value="1">Monday</option>
                                 <option value="2">Tuesday</option>
@@ -54,24 +54,22 @@
                                 <option value="6">Saturday</option>
                                 <option value="0">Sunday</option>
                             </select>
-                            <span asp-validation-for="NewSchedule.DayOfWeek" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="NewSchedule.StartTimeString" class="form-label">Start Time</label>
-                            <input asp-for="NewSchedule.StartTimeString" type="time" class="form-control" />
-                            <span asp-validation-for="NewSchedule.StartTimeString" class="text-danger"></span>
+                            <label for="StartTimeString" class="form-label">Start Time</label>
+                            <input name="StartTimeString" id="StartTimeString" type="time" class="form-control" required />
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="NewSchedule.EndTimeString" class="form-label">End Time</label>
-                            <input asp-for="NewSchedule.EndTimeString" type="time" class="form-control" />
-                            <span asp-validation-for="NewSchedule.EndTimeString" class="text-danger"></span>
+                            <label for="EndTimeString" class="form-label">End Time</label>
+                            <input name="EndTimeString" id="EndTimeString" type="time" class="form-control" required />
                         </div>
 
                         <div class="mb-3 form-check">
-                            <input asp-for="NewSchedule.IsActive" type="checkbox" class="form-check-input" checked />
-                            <label asp-for="NewSchedule.IsActive" class="form-check-label"></label>
+                            <input name="IsActive" id="IsActive" type="checkbox" class="form-check-input" checked value="true" />
+                            <input name="IsActive" type="hidden" value="false" />
+                            <label for="IsActive" class="form-check-label">Active</label>
                         </div>
 
                         <div class="d-grid">
@@ -197,5 +195,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
