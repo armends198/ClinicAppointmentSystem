@@ -11,16 +11,35 @@ namespace ClinicAppointmentSystem.ViewModels
 
         [Required(ErrorMessage = "Start time is required")]
         [Display(Name = "Start Time")]
-        [DataType(DataType.Time)]
-        public TimeSpan StartTime { get; set; }
+        public string StartTimeString { get; set; } // Changed to string
 
         [Required(ErrorMessage = "End time is required")]
         [Display(Name = "End Time")]
-        [DataType(DataType.Time)]
-        public TimeSpan EndTime { get; set; }
+        public string EndTimeString { get; set; } // Changed to string
 
         [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
+
+        // Helper properties to convert to TimeSpan
+        public TimeSpan StartTime
+        {
+            get
+            {
+                if (TimeSpan.TryParse(StartTimeString, out var time))
+                    return time;
+                return TimeSpan.Zero;
+            }
+        }
+
+        public TimeSpan EndTime
+        {
+            get
+            {
+                if (TimeSpan.TryParse(EndTimeString, out var time))
+                    return time;
+                return TimeSpan.Zero;
+            }
+        }
     }
 
     public class ManageScheduleViewModel

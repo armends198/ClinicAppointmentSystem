@@ -149,51 +149,66 @@ namespace ClinicAppointmentSystem.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (ModelState.IsValid)
+            // Manual validation for string time fields
+            if (string.IsNullOrEmpty(model.StartTimeString) || string.IsNullOrEmpty(model.EndTimeString))
             {
-                // Validate that end time is after start time
-                if (model.EndTime <= model.StartTime)
-                {
-                    TempData["ErrorMessage"] = $"End time ({model.EndTime}) must be after start time ({model.StartTime}).";
-                    return RedirectToAction("ManageSchedule");
-                }
-
-                // Check for overlapping schedule
-                var allSchedules = await _context.DoctorWorkingHours
-                    .Where(w => w.DoctorId == doctor.DoctorId
-                           && w.DayOfWeek == model.DayOfWeek
-                           && w.IsActive)
-                    .ToListAsync();
-
-                var overlapping = allSchedules.Any(w =>
-                    (model.StartTime >= w.StartTime && model.StartTime < w.EndTime)
-                    || (model.EndTime > w.StartTime && model.EndTime <= w.EndTime)
-                    || (model.StartTime <= w.StartTime && model.EndTime >= w.EndTime));
-
-                if (overlapping)
-                {
-                    TempData["ErrorMessage"] = "This time slot overlaps with an existing schedule.";
-                    return RedirectToAction("ManageSchedule");
-                }
-
-                var workingHours = new DoctorWorkingHours
-                {
-                    DoctorId = doctor.DoctorId,
-                    DayOfWeek = model.DayOfWeek,
-                    StartTime = model.StartTime,
-                    EndTime = model.EndTime,
-                    IsActive = model.IsActive,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.DoctorWorkingHours.Add(workingHours);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Working hours added successfully!";
+                TempData["ErrorMessage"] = "Please select both start and end times.";
                 return RedirectToAction("ManageSchedule");
             }
 
-            TempData["ErrorMessage"] = "Please fill in all required fields.";
+            // Parse times
+            if (!TimeSpan.TryParse(model.StartTimeString, out TimeSpan startTime))
+            {
+                TempData["ErrorMessage"] = "Invalid start time format.";
+                return RedirectToAction("ManageSchedule");
+            }
+
+            if (!TimeSpan.TryParse(model.EndTimeString, out TimeSpan endTime))
+            {
+                TempData["ErrorMessage"] = "Invalid end time format.";
+                return RedirectToAction("ManageSchedule");
+            }
+
+            // Validate that end time is after start time
+            if (endTime <= startTime)
+            {
+                TempData["ErrorMessage"] = $"End time must be after start time.";
+                return RedirectToAction("ManageSchedule");
+            }
+
+            // Check for overlapping schedule
+            var allSchedules = await _context.DoctorWorkingHours
+                .Where(w => w.DoctorId == doctor.DoctorId
+                       && w.DayOfWeek == model.DayOfWeek
+                       && w.IsActive)
+                .ToListAsync();
+
+            // Check overlap in memory (SQLite TimeSpan issue)
+            var overlapping = allSchedules.Any(w =>
+                (startTime >= w.StartTime && startTime < w.EndTime)
+                || (endTime > w.StartTime && endTime <= w.EndTime)
+                || (startTime <= w.StartTime && endTime >= w.EndTime));
+
+            if (overlapping)
+            {
+                TempData["ErrorMessage"] = "This time slot overlaps with an existing schedule.";
+                return RedirectToAction("ManageSchedule");
+            }
+
+            var workingHours = new DoctorWorkingHours
+            {
+                DoctorId = doctor.DoctorId,
+                DayOfWeek = model.DayOfWeek,
+                StartTime = startTime,
+                EndTime = endTime,
+                IsActive = model.IsActive,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.DoctorWorkingHours.Add(workingHours);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Working hours added successfully!";
             return RedirectToAction("ManageSchedule");
         }
 
