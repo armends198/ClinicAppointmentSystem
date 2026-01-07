@@ -1,0 +1,134 @@
+﻿@model ClinicAppointmentSystem.ViewModels.CalendarViewModel
+
+@{
+    ViewData["Title"] = "My Appointments Calendar";
+}
+
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-calendar3"></i> My Appointments Calendar</h2>
+                <div>
+                    <a asp-action="BookAppointment" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Book Appointment
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Legend</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #ffc107;">Pending</span>
+                        <small class="ms-2">Awaiting approval</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #28a745;">Approved</span>
+                        <small class="ms-2">Confirmed</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #17a2b8;">Completed</span>
+                        <small class="ms-2">Finished</small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge" style="background-color: #dc3545;">Cancelled</span>
+                        <small class="ms-2">Cancelled</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3" id="eventDetails" style="display:none;">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Appointment Details</h6>
+                </div>
+                <div class="card-body" id="eventDetailsContent">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            var events = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Events.Select(e => new
+            {
+                id = e.Id,
+                title = e.Title,
+                start = e.Start,
+                end = e.End,
+                backgroundColor = e.Color,
+                borderColor = e.Color,
+                extendedProps = new
+                {
+                    status = e.Status,
+                    doctorName = e.DoctorName,
+                    reason = e.Reason
+                }
+            })));
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: events,
+                eventClick: function (info) {
+                    var event = info.event;
+                    var details = `
+                                <dl>
+                                    <dt>Doctor:</dt>
+                                    <dd>${event.extendedProps.doctorName}</dd>
+
+                                    <dt>Date:</dt>
+                                    <dd>${event.start.toLocaleDateString()}</dd>
+
+                                    <dt>Time:</dt>
+                                    <dd>${event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</dd>
+
+                                    <dt>Status:</dt>
+                                    <dd><span class="badge" style="background-color: ${event.backgroundColor}">${event.extendedProps.status}</span></dd>
+
+                                    <dt>Reason:</dt>
+                                    <dd>${event.extendedProps.reason || 'Not specified'}</dd>
+                                </dl>
+                            `;
+
+                    document.getElementById('eventDetailsContent').innerHTML = details;
+                    document.getElementById('eventDetails').style.display = 'block';
+                },
+                height: 'auto',
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: true
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+}

@@ -272,5 +272,146 @@ namespace ClinicAppointmentSystem.Controllers
             TempData["SuccessMessage"] = "Appointment cancelled successfully.";
             return RedirectToAction("MyAppointments");
         }
+
+        // GET: Patient/EditProfile
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var patient = await _context.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var viewModel = new ViewModels.EditPatientProfileViewModel
+            {
+                FirstName = patient.User.FirstName,
+                LastName = patient.User.LastName,
+                PhoneNumber = patient.User.PhoneNumber,
+                DateOfBirth = patient.DateOfBirth,
+                Gender = patient.Gender,
+                Address = patient.Address,
+                BloodType = patient.BloodType,
+                Allergies = patient.Allergies,
+                EmergencyContactName = patient.EmergencyContactName,
+                EmergencyContactPhone = patient.EmergencyContactPhone
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Patient/EditProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(ViewModels.EditPatientProfileViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var patient = await _context.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Update user info
+            patient.User.FirstName = model.FirstName;
+            patient.User.LastName = model.LastName;
+            patient.User.PhoneNumber = model.PhoneNumber;
+            patient.User.UpdatedAt = DateTime.UtcNow;
+
+            // Update patient info
+            patient.DateOfBirth = model.DateOfBirth;
+            patient.Gender = model.Gender;
+            patient.Address = model.Address;
+            patient.BloodType = model.BloodType;
+            patient.Allergies = model.Allergies;
+            patient.EmergencyContactName = model.EmergencyContactName;
+            patient.EmergencyContactPhone = model.EmergencyContactPhone;
+            patient.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // Update session with new name
+            HttpContext.Session.SetString("UserName", model.FirstName + " " + model.LastName);
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+
+        // GET: Patient/Calendar
+        [HttpGet]
+        public async Task<IActionResult> Calendar()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Specialization)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Where(a => a.PatientId == patient.PatientId)
+                .ToListAsync();
+
+            var events = appointments.Select(a => new ViewModels.CalendarEvent
+            {
+                Id = a.AppointmentId,
+                Title = "Dr. " + a.Doctor.User.FirstName + " " + a.Doctor.User.LastName,
+                Start = a.TimeSlot.StartDateTime,
+                End = a.TimeSlot.EndDateTime,
+                Color = a.AppointmentStatus.StatusName switch
+                {
+                    "Pending" => "#ffc107", // Yellow
+                    "Approved" => "#28a745", // Green
+                    "Completed" => "#17a2b8", // Blue
+                    "Cancelled" => "#dc3545", // Red
+                    _ => "#6c757d" // Gray
+                },
+                Status = a.AppointmentStatus.StatusName,
+                DoctorName = "Dr. " + a.Doctor.User.FirstName + " " + a.Doctor.User.LastName,
+                Reason = a.Reason
+            }).ToList();
+
+            var viewModel = new ViewModels.CalendarViewModel
+            {
+                Events = events
+            };
+
+            return View(viewModel);
+        }
     }
 }
