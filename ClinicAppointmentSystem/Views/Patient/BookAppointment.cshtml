@@ -73,7 +73,7 @@
                             <div id="slotsContainer" class="row g-2">
                                 <p class="text-muted">Please select a date to see available time slots.</p>
                             </div>
-                            <input type="hidden" id="timeSlotId" name="TimeSlotId" />
+                            <input type="hidden" id="selectedTime" name="SelectedTime" />
                         </div>
 
                         <!-- Step 5: Reason -->
@@ -192,16 +192,16 @@
         });
 
         // When slot is clicked
+                // When slot is clicked
         $(document).on('click', '.slot-btn', function () {
             $('.slot-btn').removeClass('btn-primary').addClass('btn-outline-primary');
             $(this).removeClass('btn-outline-primary').addClass('btn-primary');
 
             selectedSlot = {
-                id: $(this).data('slot-id'),
                 start: $(this).data('start'),
                 end: $(this).data('end')
             };
-            $('#timeSlotId').val(selectedSlot.id);
+            $('#selectedTime').val(selectedSlot.start);  // <-- Pass time string instead of ID
             $('#reasonSection, #submitSection').show();
             updateSummary();
         });
