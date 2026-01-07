@@ -276,5 +276,150 @@ namespace ClinicAppointmentSystem.Controllers
 
             return RedirectToAction("ManageSchedule");
         }
+
+        // GET: Doctor/Appointments
+        [HttpGet]
+        public async Task<IActionResult> Appointments()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Where(a => a.DoctorId == doctor.DoctorId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        // POST: Doctor/ApproveAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveAppointment(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            appointment.StatusId = 2; // Approved
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Appointment approved successfully!";
+            return RedirectToAction("Appointments");
+        }
+
+        // POST: Doctor/RejectAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectAppointment(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.TimeSlot)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            appointment.StatusId = 4; // Cancelled
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            // Free up the time slot
+            appointment.TimeSlot.IsBooked = false;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Appointment rejected.";
+            return RedirectToAction("Appointments");
+        }
+
+        // POST: Doctor/CompleteAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteAppointment(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            appointment.StatusId = 3; // Completed
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Appointment marked as completed!";
+            return RedirectToAction("Appointments");
+        }
     }
 }
