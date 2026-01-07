@@ -77,7 +77,9 @@
                     </div>
 
                     <div class="mt-4">
-                        <button class="btn btn-success" disabled>Edit Profile (Coming Soon)</button>
+                        <a asp-action="EditProfile" class="btn btn-success">
+                            <i class="bi bi-pencil"></i> Edit Profile
+                        </a>
                     </div>
                 </div>
             </div>
@@ -91,8 +93,8 @@
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <a asp-action="Index" class="btn btn-outline-primary">Dashboard</a>
-                        <a href="#" class="btn btn-outline-success">My Schedule</a>
-                        <a href="#" class="btn btn-outline-info">Appointments</a>
+                        <a asp-action="ManageSchedule" class="btn btn-outline-success">My Schedule</a>
+                        <a asp-action="Appointments" class="btn btn-outline-info">Appointments</a>
                         <a asp-action="Logout" asp-controller="Account" class="btn btn-outline-danger">Logout</a>
                     </div>
                 </div>

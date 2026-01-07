@@ -1,10 +1,19 @@
-@model IEnumerable<ClinicAppointmentSystem.Models.Appointment>
+@model List<ClinicAppointmentSystem.Models.Appointment>
 
 @{
     ViewData["Title"] = "My Appointments";
 }
 
 <div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-calendar-check"></i> My Appointments</h2>
+                <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -21,97 +30,230 @@
         </div>
     }
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2>My Appointments</h2>
-            <p class="text-muted">Manage your patient appointments and medical notes</p>
-        </div>
-    </div>
+    <!-- Tabs for filtering -->
+    <ul class="nav nav-tabs mb-3" id="appointmentTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                <i class="bi bi-clock"></i> Pending (@Model.Count(a => a.AppointmentStatus.StatusName == "Pending"))
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button">
+                <i class="bi bi-check-circle"></i> Approved (@Model.Count(a => a.AppointmentStatus.StatusName == "Approved"))
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button">
+                <i class="bi bi-check-all"></i> Completed (@Model.Count(a => a.AppointmentStatus.StatusName == "Completed"))
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button">
+                <i class="bi bi-x-circle"></i> Cancelled (@Model.Count(a => a.AppointmentStatus.StatusName == "Cancelled"))
+            </button>
+        </li>
+    </ul>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            @if (Model != null && Model.Any())
+    <div class="tab-content" id="appointmentTabContent">
+        <!-- Pending Appointments -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            @{
+                var pendingAppts = Model.Where(a => a.AppointmentStatus.StatusName == "Pending").ToList();
+            }
+            @if (pendingAppts.Any())
             {
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Patient</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var appointment in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        <i class="bi bi-calendar3"></i>
-                                        @appointment.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")
-                                        <br />
-                                        <small class="text-muted">
-                                            @appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") -
-                                            @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <strong>@appointment.Patient.User.FirstName @appointment.Patient.User.LastName</strong>
-                                        <br />
-                                        <small class="text-muted">@appointment.Patient.User.Email</small>
-                                    </td>
-                                    <td>@appointment.Reason</td>
-                                    <td>
-                                        @if (appointment.AppointmentStatus.StatusName == "Pending")
-                                        {
-                                            <span class="badge bg-warning">@appointment.AppointmentStatus.StatusName</span>
-                                        }
-                                        else if (appointment.AppointmentStatus.StatusName == "Approved")
-                                        {
-                                            <span class="badge bg-info">@appointment.AppointmentStatus.StatusName</span>
-                                        }
-                                        else if (appointment.AppointmentStatus.StatusName == "Completed")
-                                        {
-                                            <span class="badge bg-success">@appointment.AppointmentStatus.StatusName</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger">@appointment.AppointmentStatus.StatusName</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (appointment.DoctorNotes.Any())
-                                        {
-                                            <a href="@Url.Action("ViewNote", new { appointmentId = appointment.AppointmentId })" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> View Note
-                                            </a>
-                                            <a href="@Url.Action("EditNote", new { appointmentId = appointment.AppointmentId })" class="btn btn-sm btn-warning">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a href="@Url.Action("CreateNote", new { appointmentId = appointment.AppointmentId })" class="btn btn-sm btn-success">
-                                                <i class="bi bi-plus-circle"></i> Add Note
-                                            </a>
-                                        }
-                                        <a href="@Url.Action("ViewPatientHistory", new { patientId = appointment.PatientId })" class="btn btn-sm btn-info">
-                                            <i class="bi bi-file-medical"></i> History
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Booked On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in pendingAppts.OrderBy(a => a.TimeSlot.StartDateTime))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@appointment.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")</strong><br>
+                                                <small class="text-muted">@appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") - @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")</small>
+                                            </td>
+                                            <td>
+                                                @appointment.Patient.User.FirstName @appointment.Patient.User.LastName<br>
+                                                <small class="text-muted">@appointment.Patient.User.Email</small>
+                                            </td>
+                                            <td>@(appointment.Reason ?? "Not specified")</td>
+                                            <td>@appointment.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                <form asp-action="ApproveAppointment" method="post" style="display:inline;">
+                                                    <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-check-circle"></i> Approve
+                                                    </button>
+                                                </form>
+                                                <form asp-action="RejectAppointment" method="post" style="display:inline;"
+                                                      onsubmit="return confirm('Are you sure you want to reject this appointment?');">
+                                                    <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="bi bi-x-circle"></i> Reject
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             }
             else
             {
-                <div class="text-center py-5">
-                    <i class="bi bi-calendar-x fs-1 text-muted"></i>
-                    <p class="text-muted mt-3">No appointments found.</p>
+                <div class="alert alert-info">No pending appointments.</div>
+            }
+        </div>
+
+        <!-- Approved Appointments -->
+        <div class="tab-pane fade" id="approved" role="tabpanel">
+            @{
+                var approvedAppts = Model.Where(a => a.AppointmentStatus.StatusName == "Approved").ToList();
+            }
+            @if (approvedAppts.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in approvedAppts.OrderBy(a => a.TimeSlot.StartDateTime))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@appointment.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")</strong><br>
+                                                <small class="text-muted">@appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") - @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")</small>
+                                            </td>
+                                            <td>
+                                                @appointment.Patient.User.FirstName @appointment.Patient.User.LastName<br>
+                                                <small class="text-muted">@appointment.Patient.User.Email</small>
+                                            </td>
+                                            <td>@(appointment.Reason ?? "Not specified")</td>
+                                            <td>
+                                                <form asp-action="CompleteAppointment" method="post" style="display:inline;">
+                                                    <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                                    <button type="submit" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-check-all"></i> Mark Complete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+            }
+            else
+            {
+                <div class="alert alert-info">No approved appointments.</div>
+            }
+        </div>
+
+        <!-- Completed Appointments -->
+        <div class="tab-pane fade" id="completed" role="tabpanel">
+            @{
+                var completedAppts = Model.Where(a => a.AppointmentStatus.StatusName == "Completed").ToList();
+            }
+            @if (completedAppts.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Completed On</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in completedAppts.OrderByDescending(a => a.TimeSlot.StartDateTime))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@appointment.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")</strong><br>
+                                                <small class="text-muted">@appointment.TimeSlot.StartDateTime.ToString("hh:mm tt")</small>
+                                            </td>
+                                            <td>@appointment.Patient.User.FirstName @appointment.Patient.User.LastName</td>
+                                            <td>@(appointment.Reason ?? "Not specified")</td>
+                                            <td>@appointment.UpdatedAt?.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">No completed appointments.</div>
+            }
+        </div>
+
+        <!-- Cancelled Appointments -->
+        <div class="tab-pane fade" id="cancelled" role="tabpanel">
+            @{
+                var cancelledAppts = Model.Where(a => a.AppointmentStatus.StatusName == "Cancelled").ToList();
+            }
+            @if (cancelledAppts.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Cancelled On</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in cancelledAppts.OrderByDescending(a => a.UpdatedAt))
+                                    {
+                                        <tr>
+                                            <td>@appointment.TimeSlot.StartDateTime.ToString("MMM dd, yyyy hh:mm tt")</td>
+                                            <td>@appointment.Patient.User.FirstName @appointment.Patient.User.LastName</td>
+                                            <td>@(appointment.Reason ?? "Not specified")</td>
+                                            <td>@appointment.UpdatedAt?.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">No cancelled appointments.</div>
             }
         </div>
     </div>

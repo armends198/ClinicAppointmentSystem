@@ -1,408 +1,237 @@
 ﻿@{
-    ViewData["Title"] = "Clinic Appointment System";
+    ViewData["Title"] = "Welcome - Clinic Appointment System";
 }
 
-<style>
-    .full-width {
-        width: 100vw;
-        position: relative;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-    }
+<div class="container mt-4">
 
-    .hero-section {
-        background: linear-gradient(135deg, #4A90D9 0%, #2E5C8A 100%);
-        min-height: 500px;
-    }
+    <!-- Hero Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-hospital fs-1 text-primary mb-3"></i>
+            <h1 class="display-5 fw-bold">Clinic Appointment System</h1>
+            <p class="lead text-muted mb-4">Book appointments with qualified doctors, manage your health records, and take control of your healthcare journey.</p>
 
-    .feature-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .doctor-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-
-        .doctor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
-        }
-
-    .category-card {
-        border-radius: 16px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-        .category-card:hover {
-            background-color: #4A90D9 !important;
-            color: white !important;
-        }
-
-            .category-card:hover i {
-                color: white !important;
-            }
-
-    .btn-rounded {
-        border-radius: 50px;
-        padding: 12px 30px;
-    }
-
-    .search-box {
-        border-radius: 50px;
-        border: none;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-
-        .search-box input {
-            border: none;
-            border-radius: 50px;
-        }
-
-            .search-box input:focus {
-                box-shadow: none;
-            }
-
-    .section-title {
-        font-weight: 700;
-        color: #1a1a2e;
-    }
-
-    .text-primary-custom {
-        color: #4A90D9;
-    }
-</style>
-
-<!-- Hero Section -->
-<div class="full-width hero-section text-white">
-    <div class="container py-5">
-        <div class="row align-items-center min-vh-50">
-            <div class="col-lg-6 py-5">
-                <p class="text-white-50 mb-2"><i class="bi bi-heart-pulse me-2"></i>Healthcare at your fingertips</p>
-                <h1 class="display-4 fw-bold mb-4">Find & Book Your <span class="text-warning">Doctor</span> Appointment</h1>
-                <p class="lead mb-4 text-white-50">Connect with qualified healthcare professionals. Book appointments instantly and manage your health journey with ease.</p>
-
-                <!-- Search Box -->
-                <div class="search-box bg-white p-2 d-flex align-items-center mb-4">
-                    <i class="bi bi-search text-muted ms-3 me-2"></i>
-                    <input type="text" class="form-control border-0" placeholder="Search doctors, specializations...">
-                    <button class="btn btn-primary btn-rounded ms-2">Search</button>
-                </div>
-
-                <div class="d-flex gap-4 mt-4">
-                    <div class="text-center">
-                        <h4 class="fw-bold mb-0">50+</h4>
-                        <small class="text-white-50">Doctors</small>
-                    </div>
-                    <div class="text-center">
-                        <h4 class="fw-bold mb-0">1000+</h4>
-                        <small class="text-white-50">Patients</small>
-                    </div>
-                    <div class="text-center">
-                        <h4 class="fw-bold mb-0">15+</h4>
-                        <small class="text-white-50">Specialties</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6 text-center d-none d-lg-block">
-                <div class="position-relative">
-                    <i class="bi bi-person-circle" style="font-size: 250px; opacity: 0.2;"></i>
-                    <div class="position-absolute top-50 start-50 translate-middle">
-                        <div class="bg-white text-primary rounded-circle p-4 shadow-lg">
-                            <i class="bi bi-calendar-check" style="font-size: 60px;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Quick Actions / Categories -->
-<div class="container" style="margin-top: -50px; position: relative; z-index: 10;">
-    <div class="row g-3">
-        <div class="col-6 col-md-3">
-            <div class="category-card bg-white shadow text-center p-4">
-                <i class="bi bi-heart-pulse fs-1 text-danger mb-3"></i>
-                <h6 class="mb-0">Cardiology</h6>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="category-card bg-white shadow text-center p-4">
-                <i class="bi bi-emoji-smile fs-1 text-info mb-3"></i>
-                <h6 class="mb-0">Pediatrics</h6>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="category-card bg-white shadow text-center p-4">
-                <i class="bi bi-bandaid fs-1 text-success mb-3"></i>
-                <h6 class="mb-0">Orthopedics</h6>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="category-card bg-white shadow text-center p-4">
-                <i class="bi bi-grid fs-1 text-primary mb-3"></i>
-                <h6 class="mb-0">View All</h6>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- How It Works -->
-<div class="container my-5 py-5">
-    <div class="text-center mb-5">
-        <h2 class="section-title">How It Works</h2>
-        <p class="text-muted">Book your appointment in 3 easy steps</p>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="text-center">
-                <div class="feature-icon bg-primary bg-opacity-10 mx-auto mb-4">
-                    <i class="bi bi-search fs-3 text-primary"></i>
-                </div>
-                <h5 class="fw-bold">Find a Doctor</h5>
-                <p class="text-muted">Search by specialty, location, or doctor name to find the right healthcare provider.</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="text-center">
-                <div class="feature-icon bg-success bg-opacity-10 mx-auto mb-4">
-                    <i class="bi bi-calendar-check fs-3 text-success"></i>
-                </div>
-                <h5 class="fw-bold">Book Appointment</h5>
-                <p class="text-muted">Choose a convenient date and time slot that works best for your schedule.</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="text-center">
-                <div class="feature-icon bg-info bg-opacity-10 mx-auto mb-4">
-                    <i class="bi bi-check-circle fs-3 text-info"></i>
-                </div>
-                <h5 class="fw-bold">Get Confirmation</h5>
-                <p class="text-muted">Receive instant confirmation and reminders for your upcoming appointment.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Featured Doctors -->
-<div class="full-width bg-light py-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="section-title mb-1">Top Doctors</h2>
-                <p class="text-muted mb-0">Book an appointment with the best</p>
-            </div>
-            <a href="#" class="btn btn-outline-primary btn-rounded">View All</a>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="doctor-card bg-white shadow-sm">
-                    <div class="text-center pt-4">
-                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                            <i class="bi bi-person fs-1 text-primary"></i>
-                        </div>
-                    </div>
-                    <div class="card-body text-center p-4">
-                        <h6 class="fw-bold mb-1">Dr. Sarah Johnson</h6>
-                        <small class="text-muted">Cardiologist</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span class="small">4.9 (120 reviews)</span>
-                        </div>
-                        <button class="btn btn-primary btn-sm btn-rounded mt-3 w-100">Book Now</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="doctor-card bg-white shadow-sm">
-                    <div class="text-center pt-4">
-                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                            <i class="bi bi-person fs-1 text-success"></i>
-                        </div>
-                    </div>
-                    <div class="card-body text-center p-4">
-                        <h6 class="fw-bold mb-1">Dr. Michael Chen</h6>
-                        <small class="text-muted">Pediatrician</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span class="small">4.8 (98 reviews)</span>
-                        </div>
-                        <button class="btn btn-primary btn-sm btn-rounded mt-3 w-100">Book Now</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="doctor-card bg-white shadow-sm">
-                    <div class="text-center pt-4">
-                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                            <i class="bi bi-person fs-1 text-info"></i>
-                        </div>
-                    </div>
-                    <div class="card-body text-center p-4">
-                        <h6 class="fw-bold mb-1">Dr. Emily Brown</h6>
-                        <small class="text-muted">Dermatologist</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span class="small">4.9 (145 reviews)</span>
-                        </div>
-                        <button class="btn btn-primary btn-sm btn-rounded mt-3 w-100">Book Now</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="doctor-card bg-white shadow-sm">
-                    <div class="text-center pt-4">
-                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                            <i class="bi bi-person fs-1 text-warning"></i>
-                        </div>
-                    </div>
-                    <div class="card-body text-center p-4">
-                        <h6 class="fw-bold mb-1">Dr. James Wilson</h6>
-                        <small class="text-muted">Orthopedic</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span class="small">4.7 (87 reviews)</span>
-                        </div>
-                        <button class="btn btn-primary btn-sm btn-rounded mt-3 w-100">Book Now</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Why Choose Us -->
-<div class="container my-5 py-5">
-    <div class="row align-items-center">
-        <div class="col-lg-6 mb-4 mb-lg-0">
-            <h2 class="section-title mb-4">Why Choose Our Platform?</h2>
-
-            <div class="d-flex mb-4">
-                <div class="feature-icon bg-primary bg-opacity-10 me-3 flex-shrink-0">
-                    <i class="bi bi-shield-check fs-4 text-primary"></i>
-                </div>
-                <div>
-                    <h6 class="fw-bold">Verified Doctors</h6>
-                    <p class="text-muted mb-0">All doctors are verified and licensed professionals with proven track records.</p>
-                </div>
-            </div>
-
-            <div class="d-flex mb-4">
-                <div class="feature-icon bg-success bg-opacity-10 me-3 flex-shrink-0">
-                    <i class="bi bi-clock fs-4 text-success"></i>
-                </div>
-                <div>
-                    <h6 class="fw-bold">24/7 Availability</h6>
-                    <p class="text-muted mb-0">Book appointments anytime, anywhere with our easy-to-use platform.</p>
-                </div>
-            </div>
-
-            <div class="d-flex mb-4">
-                <div class="feature-icon bg-info bg-opacity-10 me-3 flex-shrink-0">
-                    <i class="bi bi-lock fs-4 text-info"></i>
-                </div>
-                <div>
-                    <h6 class="fw-bold">Secure & Private</h6>
-                    <p class="text-muted mb-0">Your health data is encrypted and protected with industry-leading security.</p>
-                </div>
-            </div>
-
-            <div class="d-flex">
-                <div class="feature-icon bg-warning bg-opacity-10 me-3 flex-shrink-0">
-                    <i class="bi bi-bell fs-4 text-warning"></i>
-                </div>
-                <div>
-                    <h6 class="fw-bold">Smart Reminders</h6>
-                    <p class="text-muted mb-0">Never miss an appointment with automated notifications and reminders.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-6 text-center">
-            <div class="bg-primary bg-opacity-10 rounded-4 p-5">
-                <i class="bi bi-hospital" style="font-size: 200px; color: #4A90D9; opacity: 0.5;"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- CTA Section -->
-<div class="full-width" style="background: linear-gradient(135deg, #4A90D9 0%, #2E5C8A 100%);">
-    <div class="container py-5">
-        <div class="row align-items-center">
-            <div class="col-lg-8 text-white">
-                <h2 class="fw-bold mb-3">Ready to Book Your Appointment?</h2>
-                <p class="mb-0 text-white-50">Join thousands of patients who trust us with their healthcare needs.</p>
-            </div>
-            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                @if (Context.Session.GetString("UserName") == null)
-                {
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg btn-rounded me-2">
-                        <i class="bi bi-person-plus me-2"></i>Sign Up
+            @if (Context.Session.GetString("UserName") == null)
+            {
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus"></i> Get Started
                     </a>
-                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg btn-rounded">
-                        Login
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            }
+            else
+            {
+                @if (Context.Session.GetString("UserRole") == "Patient")
+                {
+                    <a asp-controller="Patient" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-speedometer2"></i> Go to Dashboard
                     </a>
                 }
-                else
+                else if (Context.Session.GetString("UserRole") == "Doctor")
                 {
-                    <a asp-controller="@(Context.Session.GetString("UserRole"))" asp-action="Index" class="btn btn-light btn-lg btn-rounded">
-                        <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                    <a asp-controller="Doctor" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-speedometer2"></i> Go to Dashboard
                     </a>
                 }
+                else if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    <a asp-controller="Admin" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-speedometer2"></i> Go to Dashboard
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <i class="bi bi-people fs-1"></i>
+                    <h3 class="mt-2">50+</h3>
+                    <p class="mb-0">Expert Doctors</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <i class="bi bi-person-heart fs-1"></i>
+                    <h3 class="mt-2">1000+</h3>
+                    <p class="mb-0">Happy Patients</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <i class="bi bi-clipboard2-pulse fs-1"></i>
+                    <h3 class="mt-2">15+</h3>
+                    <p class="mb-0">Specializations</p>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- How It Works -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> How It Works</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-person-plus fs-3 text-primary"></i>
+                    </div>
+                    <h6 class="fw-bold">1. Create Account</h6>
+                    <p class="text-muted small">Register as a patient or doctor with your basic information.</p>
+                </div>
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-search fs-3 text-success"></i>
+                    </div>
+                    <h6 class="fw-bold">2. Find a Doctor</h6>
+                    <p class="text-muted small">Browse specialists and choose the right one for you.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                        <i class="bi bi-calendar-check fs-3 text-info"></i>
+                    </div>
+                    <h6 class="fw-bold">3. Book Appointment</h6>
+                    <p class="text-muted small">Select a time slot and confirm your appointment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Specializations -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-grid"></i> Our Specializations</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body p-3">
+                            <i class="bi bi-heart-pulse fs-2 text-danger"></i>
+                            <p class="mb-0 mt-2 small">Cardiology</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body p-3">
+                            <i class="bi bi-brightness-high fs-2 text-warning"></i>
+                            <p class="mb-0 mt-2 small">Dermatology</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body p-3">
+                            <i class="bi bi-emoji-smile fs-2 text-info"></i>
+                            <p class="mb-0 mt-2 small">Pediatrics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body p-3">
+                            <i class="bi bi-bandaid fs-2 text-success"></i>
+                            <p class="mb-0 mt-2 small">Orthopedics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body p-3">
+                            <i class="bi bi-clipboard2-pulse fs-2 text-primary"></i>
+                            <p class="mb-0 mt-2 small">General</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body p-3">
+                            <i class="bi bi-plus-circle fs-2 text-secondary"></i>
+                            <p class="mb-0 mt-2 small">More...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Options -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-person-heart fs-1 text-primary mb-3"></i>
+                    <h5 class="card-title">For Patients</h5>
+                    <p class="card-text text-muted">Book appointments, manage your health records, and connect with doctors.</p>
+                    <a asp-controller="Account" asp-action="RegisterPatient" class="btn btn-primary">
+                        <i class="bi bi-person-plus"></i> Register as Patient
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm border-success">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-hospital fs-1 text-success mb-3"></i>
+                    <h5 class="card-title">For Doctors</h5>
+                    <p class="card-text text-muted">Manage your schedule, view appointments, and provide medical care.</p>
+                    <a asp-controller="Account" asp-action="RegisterDoctor" class="btn btn-success">
+                        <i class="bi bi-person-plus"></i> Register as Doctor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="bi bi-telephone"></i> Contact Us</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-geo-alt fs-4 text-primary me-3"></i>
+                        <div>
+                            <strong>Location</strong>
+                            <p class="mb-0 text-muted small">123 Medical Center Drive</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-telephone fs-4 text-primary me-3"></i>
+                        <div>
+                            <strong>Phone</strong>
+                            <p class="mb-0 text-muted small">+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope fs-4 text-primary me-3"></i>
+                        <div>
+                            <strong>Email</strong>
+                            <p class="mb-0 text-muted small">contact@clinicsystem.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
-
-<!-- Footer Info -->
-<div class="full-width bg-dark text-white py-5">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <h5 class="fw-bold mb-3"><i class="bi bi-hospital me-2"></i>Clinic System</h5>
-                <p class="text-white-50">Your trusted healthcare companion. Book appointments, manage health records, and connect with top doctors.</p>
-            </div>
-
-            <div class="col-lg-2">
-                <h6 class="fw-bold mb-3">Quick Links</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Find Doctors</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Specialties</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">About Us</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Contact</a></li>
-                </ul>
-            </div>
-
-            <div class="col-lg-2">
-                <h6 class="fw-bold mb-3">For Patients</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a asp-controller="Account" asp-action="RegisterPatient" class="text-white-50 text-decoration-none">Register</a></li>
-                    <li class="mb-2"><a asp-controller="Account" asp-action="Login" class="text-white-50 text-decoration-none">Login</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">My Appointments</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Medical Records</a></li>
-                </ul>
-            </div>
-
-            <div class="col-lg-4">
-                <h6 class="fw-bold mb-3">Contact Us</h6>
-                <div class="d-flex align-items-center mb-3">
-                    <i class="bi bi

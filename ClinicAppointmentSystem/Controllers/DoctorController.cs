@@ -300,6 +300,300 @@ namespace ClinicAppointmentSystem.Controllers
                     .ThenInclude(p => p.User)
                 .Include(a => a.TimeSlot)
                 .Include(a => a.AppointmentStatus)
+                .Where(a => a.DoctorId == doctor.DoctorId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        // POST: Doctor/ApproveAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveAppointment(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            appointment.StatusId = 2; // Approved
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Appointment approved successfully!";
+            return RedirectToAction("Appointments");
+        }
+
+        // POST: Doctor/RejectAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectAppointment(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.TimeSlot)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            appointment.StatusId = 4; // Cancelled
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            // Free up the time slot
+            appointment.TimeSlot.IsBooked = false;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Appointment rejected.";
+            return RedirectToAction("Appointments");
+        }
+
+        // POST: Doctor/CompleteAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteAppointment(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            appointment.StatusId = 3; // Completed
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Appointment marked as completed!";
+            return RedirectToAction("Appointments");
+        }
+
+        // GET: Doctor/EditProfile
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .Include(d => d.User)
+                .Include(d => d.Specialization)
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var viewModel = new ViewModels.EditDoctorProfileViewModel
+            {
+                FirstName = doctor.User.FirstName,
+                LastName = doctor.User.LastName,
+                PhoneNumber = doctor.User.PhoneNumber,
+                SpecializationId = doctor.SpecializationId,
+                LicenseNumber = doctor.LicenseNumber,
+                Biography = doctor.Biography,
+                ConsultationDuration = doctor.ConsultationDuration,
+                ConsultationFee = doctor.ConsultationFee
+            };
+
+            ViewBag.Specializations = await _context.Specializations.ToListAsync();
+            return View(viewModel);
+        }
+
+        // POST: Doctor/EditProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(ViewModels.EditDoctorProfileViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Specializations = await _context.Specializations.ToListAsync();
+                return View(model);
+            }
+
+            var doctor = await _context.Doctors
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Check if license number is already used by another doctor
+            var existingDoctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.LicenseNumber == model.LicenseNumber && d.DoctorId != doctor.DoctorId);
+
+            if (existingDoctor != null)
+            {
+                ModelState.AddModelError("LicenseNumber", "This license number is already registered to another doctor");
+                ViewBag.Specializations = await _context.Specializations.ToListAsync();
+                return View(model);
+            }
+
+            // Update user info
+            doctor.User.FirstName = model.FirstName;
+            doctor.User.LastName = model.LastName;
+            doctor.User.PhoneNumber = model.PhoneNumber;
+            doctor.User.UpdatedAt = DateTime.UtcNow;
+
+            // Update doctor info
+            doctor.SpecializationId = model.SpecializationId;
+            doctor.LicenseNumber = model.LicenseNumber;
+            doctor.Biography = model.Biography;
+            doctor.ConsultationDuration = model.ConsultationDuration;
+            doctor.ConsultationFee = model.ConsultationFee;
+            doctor.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // Update session with new name
+            HttpContext.Session.SetString("UserName", "Dr. " + model.FirstName + " " + model.LastName);
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+
+        // GET: Doctor/Calendar
+        [HttpGet]
+        public async Task<IActionResult> Calendar()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Where(a => a.DoctorId == doctor.DoctorId)
+                .ToListAsync();
+
+            var events = appointments.Select(a => new ViewModels.CalendarEvent
+            {
+                Id = a.AppointmentId,
+                Title = a.Patient.User.FirstName + " " + a.Patient.User.LastName,
+                Start = a.TimeSlot.StartDateTime,
+                End = a.TimeSlot.EndDateTime,
+                Color = a.AppointmentStatus.StatusName switch
+                {
+                    "Pending" => "#ffc107", // Yellow
+                    "Approved" => "#28a745", // Green
+                    "Completed" => "#17a2b8", // Blue
+                    "Cancelled" => "#dc3545", // Red
+                    _ => "#6c757d" // Gray
+                },
+                Status = a.AppointmentStatus.StatusName,
+                PatientName = a.Patient.User.FirstName + " " + a.Patient.User.LastName,
+                Reason = a.Reason
+            }).ToList();
+
+            var viewModel = new ViewModels.CalendarViewModel
+            {
+                Events = events
+            };
+
+            return View(viewModel);
+        }
+
+        // GET: Doctor/Appointments
+        [HttpGet]
+        public async Task<IActionResult> Appointments()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
                 .Include(a => a.DoctorNotes)
                 .Where(a => a.DoctorId == doctor.DoctorId)
                 .OrderByDescending(a => a.TimeSlot.StartDateTime)
