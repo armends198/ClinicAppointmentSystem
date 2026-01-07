@@ -1,0 +1,115 @@
+@model ClinicAppointmentSystem.Models.DoctorNote
+
+@{
+    ViewData["Title"] = "Doctor Note";
+    var appointment = ViewBag.Appointment as ClinicAppointmentSystem.Models.Appointment;
+}
+
+<div class="container mt-4">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Doctor Note</h2>
+            <p class="text-muted">Medical notes from your appointment</p>
+        </div>
+    </div>
+
+    @if (appointment != null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Appointment Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Doctor:</strong> Dr. @appointment.Doctor.User.FirstName @appointment.Doctor.User.LastName</p>
+                        <p><strong>Specialization:</strong> @appointment.Doctor.Specialization.Name</p>
+                        <p><strong>Date:</strong> @appointment.TimeSlot.StartDateTime.ToString("MMMM dd, yyyy")</p>
+                        <p><strong>Time:</strong> @appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") - @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Reason for Visit:</strong> @appointment.Reason</p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">@appointment.AppointmentStatus.StatusName</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Medical Notes</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h6 class="text-primary"><i class="bi bi-clipboard-pulse"></i> Diagnosis</h6>
+                <div class="border-start border-primary border-3 ps-3 ms-2">
+                    <p>@Model.Diagnosis</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="mb-4">
+                <h6 class="text-primary"><i class="bi bi-heart-pulse"></i> Treatment Plan</h6>
+                <div class="border-start border-primary border-3 ps-3 ms-2">
+                    <p>@Model.Treatment</p>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Prescription))
+            {
+                <hr />
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bi bi-capsule"></i> Prescription</h6>
+                    <div class="border-start border-success border-3 ps-3 ms-2">
+                        <p>@Model.Prescription</p>
+                    </div>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+            {
+                <hr />
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bi bi-journal-text"></i> Additional Notes</h6>
+                    <div class="border-start border-info border-3 ps-3 ms-2">
+                        <p>@Model.AdditionalNotes</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <strong>Important:</strong> This medical note is for your reference. Always consult with your healthcare provider if you have questions about your diagnosis or treatment.
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="MedicalRecords" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Medical Records
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="bi bi-printer"></i> Print
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        @@media print {
+            .btn, .alert, nav, footer {
+                display: none !important;
+            }
+        }
+    </style>
+}

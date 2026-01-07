@@ -276,5 +276,347 @@ namespace ClinicAppointmentSystem.Controllers
 
             return RedirectToAction("ManageSchedule");
         }
+
+        // GET: Doctor/Appointments
+        [HttpGet]
+        public async Task<IActionResult> Appointments()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Include(a => a.DoctorNotes)
+                .Where(a => a.DoctorId == doctor.DoctorId)
+                .OrderByDescending(a => a.TimeSlot.StartDateTime)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        // GET: Doctor/CreateNote
+        [HttpGet]
+        public async Task<IActionResult> CreateNote(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Include(a => a.DoctorNotes)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            // Check if note already exists
+            if (appointment.DoctorNotes.Any())
+            {
+                TempData["ErrorMessage"] = "A note already exists for this appointment. You can edit it instead.";
+                return RedirectToAction("ViewNote", new { appointmentId = appointmentId });
+            }
+
+            ViewBag.Appointment = appointment;
+            return View(new DoctorNote { AppointmentId = appointmentId });
+        }
+
+        // POST: Doctor/CreateNote
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateNote(DoctorNote model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.DoctorNotes)
+                .FirstOrDefaultAsync(a => a.AppointmentId == model.AppointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            // Check if note already exists
+            if (appointment.DoctorNotes.Any())
+            {
+                TempData["ErrorMessage"] = "A note already exists for this appointment.";
+                return RedirectToAction("ViewNote", new { appointmentId = model.AppointmentId });
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.DoctorNotes.Add(model);
+                await _context.SaveChangesAsync();
+
+                // Update appointment status to Completed if not already
+                if (appointment.StatusId != 3) // 3 = Completed
+                {
+                    appointment.StatusId = 3;
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["SuccessMessage"] = "Doctor note created successfully!";
+                return RedirectToAction("ViewNote", new { appointmentId = model.AppointmentId });
+            }
+
+            var appointmentData = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .FirstOrDefaultAsync(a => a.AppointmentId == model.AppointmentId);
+
+            ViewBag.Appointment = appointmentData;
+            return View(model);
+        }
+
+        // GET: Doctor/ViewNote
+        [HttpGet]
+        public async Task<IActionResult> ViewNote(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Include(a => a.DoctorNotes)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            var note = appointment.DoctorNotes.FirstOrDefault();
+            if (note == null)
+            {
+                TempData["ErrorMessage"] = "No note found for this appointment.";
+                return RedirectToAction("CreateNote", new { appointmentId = appointmentId });
+            }
+
+            ViewBag.Appointment = appointment;
+            return View(note);
+        }
+
+        // GET: Doctor/EditNote
+        [HttpGet]
+        public async Task<IActionResult> EditNote(int appointmentId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Include(a => a.DoctorNotes)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            var note = appointment.DoctorNotes.FirstOrDefault();
+            if (note == null)
+            {
+                TempData["ErrorMessage"] = "No note found for this appointment.";
+                return RedirectToAction("CreateNote", new { appointmentId = appointmentId });
+            }
+
+            ViewBag.Appointment = appointment;
+            return View(note);
+        }
+
+        // POST: Doctor/EditNote
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditNote(DoctorNote model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointment = await _context.Appointments
+                .Include(a => a.DoctorNotes)
+                .FirstOrDefaultAsync(a => a.AppointmentId == model.AppointmentId && a.DoctorId == doctor.DoctorId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            var existingNote = appointment.DoctorNotes.FirstOrDefault();
+            if (existingNote == null)
+            {
+                TempData["ErrorMessage"] = "No note found for this appointment.";
+                return RedirectToAction("CreateNote", new { appointmentId = model.AppointmentId });
+            }
+
+            if (ModelState.IsValid)
+            {
+                existingNote.Diagnosis = model.Diagnosis;
+                existingNote.Treatment = model.Treatment;
+                existingNote.Prescription = model.Prescription;
+                existingNote.AdditionalNotes = model.AdditionalNotes;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Doctor note updated successfully!";
+                return RedirectToAction("ViewNote", new { appointmentId = model.AppointmentId });
+            }
+
+            var appointmentData = await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .FirstOrDefaultAsync(a => a.AppointmentId == model.AppointmentId);
+
+            ViewBag.Appointment = appointmentData;
+            return View(model);
+        }
+
+        // GET: Doctor/ViewPatientHistory
+        [HttpGet]
+        public async Task<IActionResult> ViewPatientHistory(int patientId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var patient = await _context.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.PatientId == patientId);
+
+            if (patient == null)
+            {
+                TempData["ErrorMessage"] = "Patient not found.";
+                return RedirectToAction("Appointments");
+            }
+
+            // Get patient's medical history
+            var medicalHistory = await _context.MedicalHistories
+                .Where(m => m.PatientId == patientId)
+                .OrderByDescending(m => m.DiagnosedDate)
+                .ToListAsync();
+
+            // Get patient's appointments with this doctor (with notes)
+            var appointments = await _context.Appointments
+                .Include(a => a.TimeSlot)
+                .Include(a => a.AppointmentStatus)
+                .Include(a => a.DoctorNotes)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.User)
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.TimeSlot.StartDateTime)
+                .ToListAsync();
+
+            // Get patient's documents
+            var documents = await _context.PatientDocuments
+                .Where(d => d.PatientId == patientId)
+                .OrderByDescending(d => d.UploadedAt)
+                .ToListAsync();
+
+            ViewBag.Patient = patient;
+            ViewBag.MedicalHistory = medicalHistory;
+            ViewBag.Appointments = appointments;
+            ViewBag.Documents = documents;
+
+            return View();
+        }
     }
 }

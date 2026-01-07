@@ -1,0 +1,118 @@
+@model IEnumerable<ClinicAppointmentSystem.Models.Appointment>
+
+@{
+    ViewData["Title"] = "My Appointments";
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>My Appointments</h2>
+            <p class="text-muted">Manage your patient appointments and medical notes</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Patient</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var appointment in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-calendar3"></i>
+                                        @appointment.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")
+                                        <br />
+                                        <small class="text-muted">
+                                            @appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") -
+                                            @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong>@appointment.Patient.User.FirstName @appointment.Patient.User.LastName</strong>
+                                        <br />
+                                        <small class="text-muted">@appointment.Patient.User.Email</small>
+                                    </td>
+                                    <td>@appointment.Reason</td>
+                                    <td>
+                                        @if (appointment.AppointmentStatus.StatusName == "Pending")
+                                        {
+                                            <span class="badge bg-warning">@appointment.AppointmentStatus.StatusName</span>
+                                        }
+                                        else if (appointment.AppointmentStatus.StatusName == "Approved")
+                                        {
+                                            <span class="badge bg-info">@appointment.AppointmentStatus.StatusName</span>
+                                        }
+                                        else if (appointment.AppointmentStatus.StatusName == "Completed")
+                                        {
+                                            <span class="badge bg-success">@appointment.AppointmentStatus.StatusName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@appointment.AppointmentStatus.StatusName</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (appointment.DoctorNotes.Any())
+                                        {
+                                            <a href="@Url.Action("ViewNote", new { appointmentId = appointment.AppointmentId })" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye"></i> View Note
+                                            </a>
+                                            <a href="@Url.Action("EditNote", new { appointmentId = appointment.AppointmentId })" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("CreateNote", new { appointmentId = appointment.AppointmentId })" class="btn btn-sm btn-success">
+                                                <i class="bi bi-plus-circle"></i> Add Note
+                                            </a>
+                                        }
+                                        <a href="@Url.Action("ViewPatientHistory", new { patientId = appointment.PatientId })" class="btn btn-sm btn-info">
+                                            <i class="bi bi-file-medical"></i> History
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                    <p class="text-muted mt-3">No appointments found.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
