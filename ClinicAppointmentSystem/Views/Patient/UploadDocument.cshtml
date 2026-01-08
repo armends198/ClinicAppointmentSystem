@@ -1,0 +1,99 @@
+@{
+    ViewData["Title"] = "Upload Document";
+}
+
+<div class="container mt-4">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Upload Medical Document</h2>
+            <p class="text-muted">Upload your lab results, imaging, prescriptions, or other medical documents</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="UploadDocument" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="documentName" class="form-label">Document Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="documentName" name="documentName" placeholder="e.g., Blood Test Results - January 2024" required />
+                    <small class="text-muted">Give your document a descriptive name</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="documentType" class="form-label">Document Type <span class="text-danger">*</span></label>
+                    <select class="form-select" id="documentType" name="documentType" required>
+                        <option value="">Select document type...</option>
+                        <option value="LabResult">Lab Result</option>
+                        <option value="Imaging">Imaging (X-Ray, MRI, CT Scan, etc.)</option>
+                        <option value="Prescription">Prescription</option>
+                        <option value="Referral">Referral Letter</option>
+                        <option value="InsuranceCard">Insurance Card</option>
+                        <option value="Vaccination">Vaccination Record</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="file" class="form-label">Select File <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required />
+                    <small class="text-muted">
+                        Allowed file types: PDF, JPG, JPEG, PNG, DOC, DOCX. Maximum file size: 10MB
+                    </small>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Privacy Notice:</strong> Your uploaded documents are securely stored and only accessible to you and your healthcare providers.
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-cloud-upload"></i> Upload Document
+                    </button>
+                    <a asp-action="MyDocuments" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="bi bi-question-circle"></i> Tips for Uploading Documents</h6>
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li>Ensure documents are clear and readable</li>
+                <li>Use descriptive names to easily identify documents later</li>
+                <li>For multi-page documents, consider using PDF format</li>
+                <li>Organize documents by type for easier management</li>
+                <li>Keep sensitive information secure - never share login credentials</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // File size validation
+        document.getElementById('file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileSize = file.size / 1024 / 1024; // in MB
+                if (fileSize > 10) {
+                    alert('File size exceeds 10MB. Please select a smaller file.');
+                    e.target.value = '';
+                }
+            }
+        });
+    </script>
+}

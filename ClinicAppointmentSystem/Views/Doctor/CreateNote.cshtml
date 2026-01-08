@@ -1,0 +1,100 @@
+@model ClinicAppointmentSystem.Models.DoctorNote
+
+@{
+    ViewData["Title"] = "Create Doctor Note";
+    var appointment = ViewBag.Appointment as ClinicAppointmentSystem.Models.Appointment;
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Create Doctor Note</h2>
+            <p class="text-muted">Add medical notes for this appointment</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (appointment != null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Appointment Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Patient:</strong> @appointment.Patient.User.FirstName @appointment.Patient.User.LastName</p>
+                        <p><strong>Date:</strong> @appointment.TimeSlot.StartDateTime.ToString("MMMM dd, yyyy")</p>
+                        <p><strong>Time:</strong> @appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") - @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Reason for Visit:</strong> @appointment.Reason</p>
+                        <p><strong>Blood Type:</strong> @appointment.Patient.BloodType</p>
+                        <p><strong>Allergies:</strong> @(string.IsNullOrEmpty(appointment.Patient.Allergies) ? "None" : appointment.Patient.Allergies)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="CreateNote" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="AppointmentId" />
+
+                <div class="mb-3">
+                    <label asp-for="Diagnosis" class="form-label">Diagnosis <span class="text-danger">*</span></label>
+                    <textarea asp-for="Diagnosis" class="form-control" rows="3" placeholder="Enter diagnosis" required></textarea>
+                    <span asp-validation-for="Diagnosis" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Treatment" class="form-label">Treatment</label>
+                    <textarea asp-for="Treatment" class="form-control" rows="4" placeholder="Enter treatment plan"></textarea>
+                    <span asp-validation-for="Treatment" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Prescription" class="form-label">Prescription</label>
+                    <textarea asp-for="Prescription" class="form-control" rows="4" placeholder="Enter prescription details (medications, dosage, duration)"></textarea>
+                    <span asp-validation-for="Prescription" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AdditionalNotes" class="form-label">Additional Notes</label>
+                    <textarea asp-for="AdditionalNotes" class="form-control" rows="4" placeholder="Any additional notes or observations"></textarea>
+                    <span asp-validation-for="AdditionalNotes" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Save Note
+                    </button>
+                    <a asp-action="Appointments" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

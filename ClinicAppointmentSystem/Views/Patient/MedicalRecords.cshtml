@@ -1,0 +1,212 @@
+@{
+    ViewData["Title"] = "My Medical Records";
+    var patient = ViewBag.Patient as ClinicAppointmentSystem.Models.Patient;
+    var medicalHistory = ViewBag.MedicalHistory as List<ClinicAppointmentSystem.Models.MedicalHistory>;
+    var appointments = ViewBag.Appointments as List<ClinicAppointmentSystem.Models.Appointment>;
+    var documents = ViewBag.Documents as List<ClinicAppointmentSystem.Models.PatientDocument>;
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>My Complete Medical Records</h2>
+            <p class="text-muted">View your complete medical history, doctor notes, and documents</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-clipboard2-pulse fs-1 text-primary"></i>
+                    <h5 class="mt-3">Medical History</h5>
+                    <p class="card-text">@(medicalHistory?.Count ?? 0) conditions</p>
+                    <a asp-action="MedicalHistory" class="btn btn-sm btn-primary">View All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-journal-medical fs-1 text-success"></i>
+                    <h5 class="mt-3">Doctor Notes</h5>
+                    <p class="card-text">@(appointments?.Count ?? 0) notes</p>
+                    <a href="#doctor-notes" class="btn btn-sm btn-success">View Notes</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <i class="bi bi-file-earmark-medical fs-1 text-info"></i>
+                    <h5 class="mt-3">Documents</h5>
+                    <p class="card-text">@(documents?.Count ?? 0) files</p>
+                    <a asp-action="MyDocuments" class="btn btn-sm btn-info">View All</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical History Summary -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-clipboard2-pulse"></i> Medical History Summary</h5>
+        </div>
+        <div class="card-body">
+            @if (medicalHistory != null && medicalHistory.Any())
+            {
+                var ongoingConditions = medicalHistory.Where(m => m.IsOngoing).ToList();
+                var pastConditions = medicalHistory.Where(m => !m.IsOngoing).ToList();
+
+                @if (ongoingConditions.Any())
+                {
+                    <h6 class="text-warning">Ongoing Conditions (@ongoingConditions.Count)</h6>
+                    <ul class="list-group mb-3">
+                        @foreach (var condition in ongoingConditions.Take(5))
+                        {
+                            <li class="list-group-item">
+                                <strong>@condition.ConditionName</strong>
+                                <span class="badge bg-warning float-end">Ongoing</span>
+                                <br />
+                                <small class="text-muted">Diagnosed: @condition.DiagnosedDate.ToString("MMM yyyy")</small>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @if (pastConditions.Any())
+                {
+                    <h6 class="text-secondary">Past Conditions (@pastConditions.Count)</h6>
+                    <ul class="list-group">
+                        @foreach (var condition in pastConditions.Take(3))
+                        {
+                            <li class="list-group-item">
+                                <strong>@condition.ConditionName</strong>
+                                <span class="badge bg-secondary float-end">Resolved</span>
+                                <br />
+                                <small class="text-muted">Diagnosed: @condition.DiagnosedDate.ToString("MMM yyyy")</small>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                <div class="mt-3">
+                    <a asp-action="MedicalHistory" class="btn btn-sm btn-outline-primary">View All Medical History</a>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No medical history recorded. <a asp-action="AddMedicalHistory">Add your first condition</a></p>
+            }
+        </div>
+    </div>
+
+    <!-- Doctor Notes from Appointments -->
+    <div class="card shadow-sm mb-4" id="doctor-notes">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-journal-medical"></i> Doctor Notes from Recent Appointments</h5>
+        </div>
+        <div class="card-body">
+            @if (appointments != null && appointments.Any())
+            {
+                @foreach (var appointment in appointments.Take(5))
+                {
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>@appointment.TimeSlot.StartDateTime.ToString("MMMM dd, yyyy")</strong>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <span class="badge bg-secondary">Dr. @appointment.Doctor.User.FirstName @appointment.Doctor.User.LastName</span>
+                                    <span class="badge bg-info">@appointment.Doctor.Specialization.Name</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><strong>Reason for Visit:</strong> @appointment.Reason</p>
+                            @if (appointment.DoctorNotes.Any())
+                            {
+                                var note = appointment.DoctorNotes.First();
+                                <hr />
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong class="text-primary">Diagnosis:</strong></p>
+                                        <p class="ms-3">@note.Diagnosis</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong class="text-primary">Treatment:</strong></p>
+                                        <p class="ms-3">@note.Treatment</p>
+                                    </div>
+                                </div>
+                                <a asp-action="ViewDoctorNote" asp-route-appointmentId="@appointment.AppointmentId" class="btn btn-sm btn-primary">
+                                    View Full Note
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (appointments.Count > 5)
+                {
+                    <p class="text-muted text-center">Showing 5 of @appointments.Count appointments with doctor notes</p>
+                }
+            }
+            else
+            {
+                <p class="text-muted mb-0">No doctor notes available yet. Notes will appear here after your appointments are completed.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Recent Documents -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-medical"></i> Recent Documents</h5>
+        </div>
+        <div class="card-body">
+            @if (documents != null && documents.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doc in documents.Take(5))
+                            {
+                                <tr>
+                                    <td>@doc.DocumentName</td>
+                                    <td><span class="badge bg-secondary">@doc.DocumentType</span></td>
+                                    <td>@doc.UploadedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <a href="@doc.FilePath" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <a asp-action="MyDocuments" class="btn btn-sm btn-outline-info">View All Documents</a>
+                    <a asp-action="UploadDocument" class="btn btn-sm btn-success">
+                        <i class="bi bi-cloud-upload"></i> Upload New
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No documents uploaded yet. <a asp-action="UploadDocument">Upload your first document</a></p>
+            }
+        </div>
+    </div>
+</div>
