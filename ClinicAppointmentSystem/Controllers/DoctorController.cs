@@ -651,6 +651,9 @@ namespace ClinicAppointmentSystem.Controllers
                 return RedirectToAction("ViewNote", new { appointmentId = model.AppointmentId });
             }
 
+            // Set CreatedAt explicitly
+            model.CreatedAt = DateTime.UtcNow;
+
             if (ModelState.IsValid)
             {
                 _context.DoctorNotes.Add(model);
@@ -666,6 +669,12 @@ namespace ClinicAppointmentSystem.Controllers
                 TempData["SuccessMessage"] = "Doctor note created successfully!";
                 return RedirectToAction("ViewNote", new { appointmentId = model.AppointmentId });
             }
+
+            // If we get here, ModelState is invalid - log errors
+            var errors = string.Join("; ", ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage));
+            TempData["ErrorMessage"] = $"Validation failed: {errors}";
 
             var appointmentData = await _context.Appointments
                 .Include(a => a.Patient)

@@ -13,6 +13,22 @@
         </div>
     </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     @if (appointment != null)
     {
         <div class="card shadow-sm mb-4">
@@ -39,6 +55,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <form asp-action="CreateNote" method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="AppointmentId" />
 
                 <div class="mb-3">
@@ -48,8 +65,8 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Treatment" class="form-label">Treatment <span class="text-danger">*</span></label>
-                    <textarea asp-for="Treatment" class="form-control" rows="4" placeholder="Enter treatment plan" required></textarea>
+                    <label asp-for="Treatment" class="form-label">Treatment</label>
+                    <textarea asp-for="Treatment" class="form-control" rows="4" placeholder="Enter treatment plan"></textarea>
                     <span asp-validation-for="Treatment" class="text-danger"></span>
                 </div>
 
