@@ -277,36 +277,6 @@ namespace ClinicAppointmentSystem.Controllers
             return RedirectToAction("ManageSchedule");
         }
 
-        // GET: Doctor/Appointments
-        [HttpGet]
-        public async Task<IActionResult> Appointments()
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var doctor = await _context.Doctors
-                .FirstOrDefaultAsync(d => d.UserId == userId);
-
-            if (doctor == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var appointments = await _context.Appointments
-                .Include(a => a.Patient)
-                    .ThenInclude(p => p.User)
-                .Include(a => a.TimeSlot)
-                .Include(a => a.AppointmentStatus)
-                .Where(a => a.DoctorId == doctor.DoctorId)
-                .OrderByDescending(a => a.CreatedAt)
-                .ToListAsync();
-
-            return View(appointments);
-        }
-
         // POST: Doctor/ApproveAppointment
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -151,6 +151,18 @@
                                             </td>
                                             <td>@(appointment.Reason ?? "Not specified")</td>
                                             <td>
+                                                @if (appointment.DoctorNotes.Any())
+                                                {
+                                                    <a asp-action="ViewNote" asp-route-appointmentId="@appointment.AppointmentId" class="btn btn-sm btn-info">
+                                                        <i class="bi bi-file-text"></i> View Note
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="CreateNote" asp-route-appointmentId="@appointment.AppointmentId" class="btn btn-sm btn-warning">
+                                                        <i class="bi bi-pencil-square"></i> Create Note
+                                                    </a>
+                                                }
                                                 <form asp-action="CompleteAppointment" method="post" style="display:inline;">
                                                     <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
                                                     <button type="submit" class="btn btn-sm btn-primary">
@@ -189,6 +201,7 @@
                                         <th>Patient</th>
                                         <th>Reason</th>
                                         <th>Completed On</th>
+                                        <th>Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -202,6 +215,20 @@
                                             <td>@appointment.Patient.User.FirstName @appointment.Patient.User.LastName</td>
                                             <td>@(appointment.Reason ?? "Not specified")</td>
                                             <td>@appointment.UpdatedAt?.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                @if (appointment.DoctorNotes.Any())
+                                                {
+                                                    <a asp-action="ViewNote" asp-route-appointmentId="@appointment.AppointmentId" class="btn btn-sm btn-info">
+                                                        <i class="bi bi-file-text"></i> View Note
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="CreateNote" asp-route-appointmentId="@appointment.AppointmentId" class="btn btn-sm btn-warning">
+                                                        <i class="bi bi-pencil-square"></i> Create Note
+                                                    </a>
+                                                }
+                                            </td>
                                         </tr>
                                     }
                                 </tbody>
