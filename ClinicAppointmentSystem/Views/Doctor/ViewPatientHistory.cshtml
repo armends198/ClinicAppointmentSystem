@@ -1,0 +1,199 @@
+@{
+    ViewData["Title"] = "Patient Medical History";
+    var patient = ViewBag.Patient as ClinicAppointmentSystem.Models.Patient;
+    var medicalHistory = ViewBag.MedicalHistory as List<ClinicAppointmentSystem.Models.MedicalHistory>;
+    var appointments = ViewBag.Appointments as List<ClinicAppointmentSystem.Models.Appointment>;
+    var documents = ViewBag.Documents as List<ClinicAppointmentSystem.Models.PatientDocument>;
+}
+
+<div class="container mt-4">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Patient Medical History</h2>
+            <p class="text-muted">Complete medical records for @patient.User.FirstName @patient.User.LastName</p>
+        </div>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-person-circle"></i> Patient Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong> @patient.User.FirstName @patient.User.LastName</p>
+                    <p><strong>Email:</strong> @patient.User.Email</p>
+                    <p><strong>Phone:</strong> @patient.User.PhoneNumber</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date of Birth:</strong> @patient.DateOfBirth.ToString("MMMM dd, yyyy")</p>
+                    <p><strong>Gender:</strong> @patient.Gender</p>
+                    <p><strong>Blood Type:</strong> @patient.BloodType</p>
+                    <p><strong>Allergies:</strong> @(string.IsNullOrEmpty(patient.Allergies) ? "None" : patient.Allergies)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical History -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-clipboard2-pulse"></i> Medical History</h5>
+        </div>
+        <div class="card-body">
+            @if (medicalHistory != null && medicalHistory.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Condition</th>
+                                <th>Diagnosed Date</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var history in medicalHistory)
+                            {
+                                <tr>
+                                    <td><strong>@history.ConditionName</strong></td>
+                                    <td>@history.DiagnosedDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        @if (history.IsOngoing)
+                                        {
+                                            <span class="badge bg-warning">Ongoing</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Resolved</span>
+                                        }
+                                    </td>
+                                    <td>@history.Notes</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No medical history recorded.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Previous Appointments & Notes -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-journal-medical"></i> Previous Appointments & Doctor Notes</h5>
+        </div>
+        <div class="card-body">
+            @if (appointments != null && appointments.Any())
+            {
+                @foreach (var appointment in appointments)
+                {
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>@appointment.TimeSlot.StartDateTime.ToString("MMMM dd, yyyy")</strong> -
+                                    @appointment.TimeSlot.StartDateTime.ToString("hh:mm tt")
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <span class="badge bg-secondary">Dr. @appointment.Doctor.User.FirstName @appointment.Doctor.User.LastName</span>
+                                    <span class="badge bg-info">@appointment.Doctor.Specialization.Name</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Reason:</strong> @appointment.Reason</p>
+                            @if (appointment.DoctorNotes.Any())
+                            {
+                                var note = appointment.DoctorNotes.First();
+                                <hr />
+                                <div class="mb-2">
+                                    <strong class="text-primary">Diagnosis:</strong>
+                                    <p class="ms-3">@note.Diagnosis</p>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-primary">Treatment:</strong>
+                                    <p class="ms-3">@note.Treatment</p>
+                                </div>
+                                @if (!string.IsNullOrEmpty(note.Prescription))
+                                {
+                                    <div class="mb-2">
+                                        <strong class="text-primary">Prescription:</strong>
+                                        <p class="ms-3">@note.Prescription</p>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted mb-0">No previous appointments found.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Patient Documents -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-medical"></i> Patient Documents</h5>
+        </div>
+        <div class="card-body">
+            @if (documents != null && documents.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Type</th>
+                                <th>Upload Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doc in documents)
+                            {
+                                <tr>
+                                    <td>@doc.DocumentName</td>
+                                    <td><span class="badge bg-secondary">@doc.DocumentType</span></td>
+                                    <td>@doc.UploadedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <a href="@doc.FilePath" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-download"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No documents uploaded.</p>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Appointments" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Appointments
+        </a>
+    </div>
+</div>

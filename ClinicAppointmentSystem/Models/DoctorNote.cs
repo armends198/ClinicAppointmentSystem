@@ -16,17 +16,17 @@ namespace ClinicAppointmentSystem.Models
         public string Diagnosis { get; set; }
 
         [MaxLength(1000)]
-        public string Treatment { get; set; }
+        public string? Treatment { get; set; }
 
         [MaxLength(1000)]
-        public string Prescription { get; set; }
+        public string? Prescription { get; set; }
 
         [MaxLength(2000)]
-        public string AdditionalNotes { get; set; }
+        public string? AdditionalNotes { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation property
-        public Appointment Appointment { get; set; }
+        public Appointment? Appointment { get; set; }
     }
 }
