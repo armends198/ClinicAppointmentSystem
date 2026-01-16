@@ -1,0 +1,92 @@
+@model ClinicAppointmentSystem.Models.DoctorNote
+
+@{
+    ViewData["Title"] = "View Doctor Note";
+    var appointment = ViewBag.Appointment as ClinicAppointmentSystem.Models.Appointment;
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Doctor Note</h2>
+            <p class="text-muted">Medical notes for this appointment</p>
+        </div>
+    </div>
+
+    @if (appointment != null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Appointment Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Patient:</strong> @appointment.Patient.User.FirstName @appointment.Patient.User.LastName</p>
+                        <p><strong>Date:</strong> @appointment.TimeSlot.StartDateTime.ToString("MMMM dd, yyyy")</p>
+                        <p><strong>Time:</strong> @appointment.TimeSlot.StartDateTime.ToString("hh:mm tt") - @appointment.TimeSlot.EndDateTime.ToString("hh:mm tt")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Reason for Visit:</strong> @appointment.Reason</p>
+                        <p><strong>Blood Type:</strong> @appointment.Patient.BloodType</p>
+                        <p><strong>Allergies:</strong> @(string.IsNullOrEmpty(appointment.Patient.Allergies) ? "None" : appointment.Patient.Allergies)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Medical Notes</h5>
+            <a href="@Url.Action("EditNote", new { appointmentId = Model.AppointmentId })" class="btn btn-light btn-sm">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h6 class="text-primary"><i class="bi bi-clipboard-pulse"></i> Diagnosis</h6>
+                <p class="ms-3">@Model.Diagnosis</p>
+            </div>
+
+            <hr />
+
+            <div class="mb-4">
+                <h6 class="text-primary"><i class="bi bi-heart-pulse"></i> Treatment</h6>
+                <p class="ms-3">@Model.Treatment</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Prescription))
+            {
+                <hr />
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bi bi-capsule"></i> Prescription</h6>
+                    <p class="ms-3">@Model.Prescription</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+            {
+                <hr />
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bi bi-journal-text"></i> Additional Notes</h6>
+                    <p class="ms-3">@Model.AdditionalNotes</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Appointments" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Appointments
+        </a>
+    </div>
+</div>
