@@ -1,0 +1,245 @@
+﻿@model IEnumerable<ClinicAppointmentSystem.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Manage Appointments";
+    var currentFilter = ViewBag.CurrentFilter as string ?? "all";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-calendar-check me-2"></i>Manage Appointments</h2>
+            <p class="text-muted mb-0">View and manage all appointments</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filter Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col">
+            <a asp-action="Appointments" asp-route-status="all" class="text-decoration-none">
+                <div class="card border-0 shadow-sm @(currentFilter == "all" ? "border-primary border-2" : "")">
+                    <div class="card-body text-center py-3">
+                        <h4 class="mb-1 text-primary">@(ViewBag.PendingCount + ViewBag.ApprovedCount + ViewBag.CompletedCount + ViewBag.CancelledCount)</h4>
+                        <small class="text-muted">All</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a asp-action="Appointments" asp-route-status="pending" class="text-decoration-none">
+                <div class="card border-0 shadow-sm @(currentFilter == "pending" ? "border-warning border-2" : "")">
+                    <div class="card-body text-center py-3">
+                        <h4 class="mb-1 text-warning">@ViewBag.PendingCount</h4>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a asp-action="Appointments" asp-route-status="approved" class="text-decoration-none">
+                <div class="card border-0 shadow-sm @(currentFilter == "approved" ? "border-info border-2" : "")">
+                    <div class="card-body text-center py-3">
+                        <h4 class="mb-1 text-info">@ViewBag.ApprovedCount</h4>
+                        <small class="text-muted">Approved</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a asp-action="Appointments" asp-route-status="completed" class="text-decoration-none">
+                <div class="card border-0 shadow-sm @(currentFilter == "completed" ? "border-success border-2" : "")">
+                    <div class="card-body text-center py-3">
+                        <h4 class="mb-1 text-success">@ViewBag.CompletedCount</h4>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a asp-action="Appointments" asp-route-status="cancelled" class="text-decoration-none">
+                <div class="card border-0 shadow-sm @(currentFilter == "cancelled" ? "border-danger border-2" : "")">
+                    <div class="card-body text-center py-3">
+                        <h4 class="mb-1 text-danger">@ViewBag.CancelledCount</h4>
+                        <small class="text-muted">Cancelled</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    @if (currentFilter == "all")
+                    {
+                        <span>All Appointments</span>
+                    }
+                    else
+                    {
+                        <span>@(currentFilter.Substring(0, 1).ToUpper() + currentFilter.Substring(1)) Appointments</span>
+                    }
+                </h5>
+                <span class="badge bg-secondary">@Model.Count() records</span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Date & Time</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var apt in Model)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-light text-dark">#@apt.AppointmentId</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                                <i class="bi bi-person text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <strong>@apt.Patient.User.FirstName @apt.Patient.User.LastName</strong>
+                                                <br />
+                                                <small class="text-muted">@apt.Patient.User.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>Dr. @apt.Doctor.User.FirstName @apt.Doctor.User.LastName</strong>
+                                            <br />
+                                            <span class="badge bg-primary">@apt.Doctor.Specialization.Name</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>@apt.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")</strong>
+                                        <br />
+                                        <small class="text-muted">
+                                            @apt.TimeSlot.StartDateTime.ToString("hh:mm tt") - @apt.TimeSlot.EndDateTime.ToString("hh:mm tt")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small>@(apt.Reason?.Length > 30 ? apt.Reason.Substring(0, 30) + "..." : apt.Reason ?? "Not specified")</small>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = apt.StatusId switch
+                                            {
+                                                1 => "bg-warning",
+                                                2 => "bg-info",
+                                                3 => "bg-success",
+                                                4 => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@apt.AppointmentStatus.StatusName</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@apt.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="AppointmentDetails" asp-route-id="@apt.AppointmentId" class="btn btn-sm btn-outline-info" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            @if (apt.StatusId == 1) // Pending
+                                            {
+                                                <form asp-action="UpdateAppointmentStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@apt.AppointmentId" />
+                                                    <input type="hidden" name="statusId" value="2" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Approve" onclick="return confirm('Approve this appointment?');">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </button>
+                                                </form>
+                                                <form asp-action="UpdateAppointmentStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@apt.AppointmentId" />
+                                                    <input type="hidden" name="statusId" value="4" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel" onclick="return confirm('Cancel this appointment?');">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            @if (apt.StatusId == 2) // Approved
+                                            {
+                                                <form asp-action="UpdateAppointmentStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@apt.AppointmentId" />
+                                                    <input type="hidden" name="statusId" value="3" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Mark Complete" onclick="return confirm('Mark this appointment as completed?');">
+                                                        <i class="bi bi-check-all"></i>
+                                                    </button>
+                                                </form>
+                                                <form asp-action="UpdateAppointmentStatus" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@apt.AppointmentId" />
+                                                    <input type="hidden" name="statusId" value="4" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel" onclick="return confirm('Cancel this appointment?');">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x fs-1 text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">No Appointments Found</h5>
+                    <p class="text-muted">
+                        @if (currentFilter != "all")
+                        {
+                            <span>No @currentFilter appointments at the moment.</span>
+                            <br />
+                            <a asp-action="Appointments" asp-route-status="all" class="btn btn-outline-primary mt-2">View All Appointments</a>
+                        }
+                        else
+                        {
+                            <span>Appointments will appear here once patients start booking.</span>
+                        }
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+
+   
+</div>
