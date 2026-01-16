@@ -1,0 +1,344 @@
+﻿@model ClinicAppointmentSystem.Models.Patient
+
+@{
+    ViewData["Title"] = "Patient Details";
+    var appointments = ViewBag.Appointments as List<ClinicAppointmentSystem.Models.Appointment>;
+    var medicalHistory = ViewBag.MedicalHistory as List<ClinicAppointmentSystem.Models.MedicalHistory>;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-person me-2"></i>Patient Details</h2>
+            <p class="text-muted mb-0">View detailed information about this patient</p>
+        </div>
+        <div>
+            <a asp-action="EditPatient" asp-route-id="@Model.PatientId" class="btn btn-warning">
+                <i class="bi bi-pencil me-1"></i> Edit Patient
+            </a>
+            <a asp-action="Patients" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Patients
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Patient Info -->
+        <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Full Name</label>
+                            <p class="fw-bold mb-0">@Model.User.FirstName @Model.User.LastName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Email</label>
+                            <p class="mb-0">@Model.User.Email</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Phone Number</label>
+                            <p class="mb-0">@(Model.User.PhoneNumber ?? "Not provided")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Status</label>
+                            <p class="mb-0">
+                                @if (Model.User.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Date of Birth</label>
+                            <p class="mb-0">
+                                @Model.DateOfBirth.ToString("MMMM dd, yyyy")
+                                <span class="text-muted">(@((DateTime.Now.Year - Model.DateOfBirth.Year)) years old)</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Gender</label>
+                            <p class="mb-0">@Model.Gender</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted small">Address</label>
+                            <p class="mb-0">@(Model.Address ?? "Not provided")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>Medical Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Blood Type</label>
+                            <p class="mb-0">
+                                @if (!string.IsNullOrEmpty(Model.BloodType))
+                                {
+                                    <span class="badge bg-danger fs-6">@Model.BloodType</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not provided</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Allergies</label>
+                            <p class="mb-0">
+                                @if (!string.IsNullOrEmpty(Model.Allergies))
+                                {
+                                    <span class="text-danger">@Model.Allergies</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">None reported</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-telephone me-2"></i>Emergency Contact</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Contact Name</label>
+                            <p class="mb-0">@(Model.EmergencyContactName ?? "Not provided")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small">Contact Phone</label>
+                            <p class="mb-0">@(Model.EmergencyContactPhone ?? "Not provided")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical History -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clipboard2-pulse me-2"></i>Medical History</h5>
+                    <span class="badge bg-light text-dark">@(medicalHistory?.Count ?? 0) records</span>
+                </div>
+                <div class="card-body">
+                    @if (medicalHistory != null && medicalHistory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Condition</th>
+                                        <th>Diagnosed Date</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var history in medicalHistory)
+                                    {
+                                        <tr>
+                                            <td><strong>@history.ConditionName</strong></td>
+                                            <td>@history.DiagnosedDate.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                @if (history.IsOngoing)
+                                                {
+                                                    <span class="badge bg-warning">Ongoing</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Resolved</span>
+                                                }
+                                            </td>
+                                            <td><small class="text-muted">@(history.Notes ?? "-")</small></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0 text-center py-3">No medical history recorded.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Appointment History -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Appointment History</h5>
+                    <span class="badge bg-light text-dark">@(appointments?.Count ?? 0) appointments</span>
+                </div>
+                <div class="card-body">
+                    @if (appointments != null && appointments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Doctor</th>
+                                        <th>Specialization</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var apt in appointments.Take(10))
+                                    {
+                                        <tr>
+                                            <td>
+                                                @apt.TimeSlot.StartDateTime.ToString("MMM dd, yyyy")
+                                                <br />
+                                                <small class="text-muted">@apt.TimeSlot.StartDateTime.ToString("hh:mm tt")</small>
+                                            </td>
+                                            <td>Dr. @apt.Doctor.User.FirstName @apt.Doctor.User.LastName</td>
+                                            <td><span class="badge bg-primary">@apt.Doctor.Specialization.Name</span></td>
+                                            <td>
+                                                @{
+                                                    var statusClass = apt.StatusId switch
+                                                    {
+                                                        1 => "bg-warning",
+                                                        2 => "bg-primary",
+                                                        3 => "bg-success",
+                                                        4 => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@apt.AppointmentStatus.StatusName</span>
+                                            </td>
+                                            <td>
+                                                <a asp-action="AppointmentDetails" asp-route-id="@apt.AppointmentId" class="btn btn-sm btn-outline-info">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (appointments.Count > 10)
+                        {
+                            <p class="text-muted text-center mb-0 mt-2">
+                                <small>Showing 10 of @appointments.Count appointments</small>
+                            </p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0 text-center py-3">No appointments found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Patient Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="bi bi-person text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>@Model.User.FirstName @Model.User.LastName</h4>
+                    <p class="text-muted mb-2">@Model.User.Email</p>
+                    @if (Model.User.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Total Appointments</span>
+                        <span class="badge bg-primary fs-6">@(appointments?.Count ?? 0)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Completed</span>
+                        <span class="badge bg-success fs-6">@(appointments?.Count(a => a.StatusId == 3) ?? 0)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Pending</span>
+                        <span class="badge bg-warning fs-6">@(appointments?.Count(a => a.StatusId == 1) ?? 0)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Cancelled</span>
+                        <span class="badge bg-danger fs-6">@(appointments?.Count(a => a.StatusId == 4) ?? 0)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>Account Info</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Joined:</strong> @Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <p class="mb-0"><strong>Last Updated:</strong> @Model.UpdatedAt.Value.ToString("MMMM dd, yyyy")</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a asp-action="EditPatient" asp-route-id="@Model.PatientId" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil me-1"></i> Edit Patient
+                    </a>
+                    <form asp-action="TogglePatientStatus" asp-route-id="@Model.PatientId" method="post">
+                        @if (Model.User.IsActive)
+                        {
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to deactivate this patient?');">
+                                <i class="bi bi-person-slash me-1"></i> Deactivate Patient
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-outline-success w-100" onclick="return confirm('Are you sure you want to activate this patient?');">
+                                <i class="bi bi-person-check me-1"></i> Activate Patient
+                            </button>
+                        }
+                    </form>
+                    <a asp-action="Patients" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

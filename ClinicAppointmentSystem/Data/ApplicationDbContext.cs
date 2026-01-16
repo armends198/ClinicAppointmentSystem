@@ -30,6 +30,22 @@ namespace ClinicAppointmentSystem.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Seed Admin User
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    UserId = 1,
+                    Email = "admin@clinic.com",
+                    PasswordHash = "$2a$11$HqHkvDLxPhJPfVaNWS7Yy.SXPYqPx9Z8K8h8PfRxU4Qz9S7rE3YWO", // Password: Admin123!
+                    FirstName = "System",
+                    LastName = "Admin",
+                    PhoneNumber = "000-000-0000",
+                    Role = "Admin",
+                    IsActive = true,
+                    CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
+            );
+
             // Seed data for AppointmentStatuses
             modelBuilder.Entity<AppointmentStatus>().HasData(
                 new AppointmentStatus

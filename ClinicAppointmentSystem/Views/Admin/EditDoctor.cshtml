@@ -1,0 +1,233 @@
+﻿@model ClinicAppointmentSystem.ViewModels.AdminEditDoctorViewModel
+
+@{
+    ViewData["Title"] = "Edit Doctor";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-pencil me-2"></i>Edit Doctor</h2>
+            <p class="text-muted mb-0">Update doctor information</p>
+        </div>
+        <div>
+            <a asp-action="DoctorDetails" asp-route-id="@Model.DoctorId" class="btn btn-outline-info">
+                <i class="bi bi-eye me-1"></i> View Details
+            </a>
+            <a asp-action="Doctors" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Doctors
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="EditDoctor" method="post">
+                        <input type="hidden" asp-for="DoctorId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Account Information -->
+                        <h5 class="border-bottom pb-2 mb-4 text-primary">
+                            <i class="bi bi-person me-2"></i>Account Information
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label"></label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label"></label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" readonly disabled />
+                                <small class="text-muted">Email cannot be changed</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Account Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="text-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">Inactive</span>
+                                        }
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <h5 class="border-bottom pb-2 mb-4 mt-4 text-success">
+                            <i class="bi bi-briefcase me-2"></i>Professional Information
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SpecializationId" class="form-label"></label>
+                                <select asp-for="SpecializationId" class="form-select">
+                                    <option value="">-- Select Specialization --</option>
+                                    @if (ViewBag.Specializations != null)
+                                    {
+                                        @foreach (var spec in ViewBag.Specializations)
+                                        {
+                                            <option value="@spec.SpecializationId">@spec.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="SpecializationId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LicenseNumber" class="form-label"></label>
+                                <input asp-for="LicenseNumber" class="form-control" />
+                                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Biography" class="form-label"></label>
+                            <textarea asp-for="Biography" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Biography" class="text-danger"></span>
+                        </div>
+
+                        <!-- Consultation Details -->
+                        <h5 class="border-bottom pb-2 mb-4 mt-4 text-info">
+                            <i class="bi bi-clock me-2"></i>Consultation Details
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConsultationDuration" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="ConsultationDuration" class="form-control" type="number" min="15" max="120" />
+                                    <span class="input-group-text">minutes</span>
+                                </div>
+                                <span asp-validation-for="ConsultationDuration" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConsultationFee" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="ConsultationFee" class="form-control" type="number" step="0.01" min="0" />
+                                </div>
+                                <span asp-validation-for="ConsultationFee" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Note:</strong> Changing consultation duration will not affect existing appointments or time slots.
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle me-1"></i> Save Changes
+                            </button>
+                            <a asp-action="Doctors" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-person-circle me-2"></i>Doctor Summary</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person text-success fs-1"></i>
+                    </div>
+                    <h5>Dr. @Model.FirstName @Model.LastName</h5>
+                    <p class="text-muted mb-1">@Model.Email</p>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Help</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small text-muted mb-0">
+                        <li>Email address cannot be changed</li>
+                        <li>License number must remain unique</li>
+                        <li>Deactivating a doctor will prevent new bookings</li>
+                        <li>Existing appointments won't be affected by status change</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a asp-action="DoctorDetails" asp-route-id="@Model.DoctorId" class="btn btn-outline-info">
+                        <i class="bi bi-eye me-1"></i> View Full Details
+                    </a>
+                    <a asp-action="Doctors" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
