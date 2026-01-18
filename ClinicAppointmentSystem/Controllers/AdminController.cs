@@ -35,7 +35,7 @@ namespace ClinicAppointmentSystem.Controllers
             ViewBag.TotalPatients = await _context.Patients.CountAsync();
             ViewBag.TotalDoctors = await _context.Doctors.CountAsync();
             ViewBag.TotalAppointments = await _context.Appointments.CountAsync();
-            
+
             ViewBag.TodayAppointments = await _context.Appointments
                 .Include(a => a.TimeSlot)
                 .Where(a => a.TimeSlot.StartDateTime.Date == DateTime.Today)
@@ -59,6 +59,292 @@ namespace ClinicAppointmentSystem.Controllers
                 .ToListAsync();
 
             return View();
+        }
+
+        #endregion
+
+        #region User Management
+
+        [HttpGet]
+        public async Task<IActionResult> Users(string role = "all")
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            var query = _context.Users.AsQueryable();
+
+            switch (role.ToLower())
+            {
+                case "patient": query = query.Where(u => u.Role == "Patient"); break;
+                case "doctor": query = query.Where(u => u.Role == "Doctor"); break;
+                case "admin": query = query.Where(u => u.Role == "Admin"); break;
+            }
+
+            ViewBag.CurrentFilter = role;
+            ViewBag.TotalUsers = await _context.Users.CountAsync();
+            ViewBag.PatientCount = await _context.Users.CountAsync(u => u.Role == "Patient");
+            ViewBag.DoctorCount = await _context.Users.CountAsync(u => u.Role == "Doctor");
+            ViewBag.AdminCount = await _context.Users.CountAsync(u => u.Role == "Admin");
+
+            var users = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
+            return View(users);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserDetails(int id)
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Users");
+            }
+
+            // Get role-specific data
+            if (user.Role == "Patient")
+            {
+                ViewBag.Patient = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.UserId == id);
+                ViewBag.AppointmentCount = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .CountAsync(a => a.Patient.UserId == id);
+            }
+            else if (user.Role == "Doctor")
+            {
+                ViewBag.Doctor = await _context.Doctors
+                    .Include(d => d.Specialization)
+                    .FirstOrDefaultAsync(d => d.UserId == id);
+                ViewBag.AppointmentCount = await _context.Appointments
+                    .Include(a => a.Doctor)
+                    .CountAsync(a => a.Doctor.UserId == id);
+            }
+
+            return View(user);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditUser(int id)
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Users");
+            }
+
+            var viewModel = new AdminEditUserViewModel
+            {
+                UserId = user.UserId,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role,
+                IsActive = user.IsActive
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(AdminEditUserViewModel model)
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction("Users");
+                }
+
+                // Prevent changing own admin role
+                var currentUserId = HttpContext.Session.GetInt32("UserId");
+                if (user.UserId == currentUserId && model.Role != "Admin")
+                {
+                    ModelState.AddModelError("Role", "You cannot change your own admin role.");
+                    return View(model);
+                }
+
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.PhoneNumber = model.PhoneNumber;
+                user.Role = model.Role;
+                user.IsActive = model.IsActive;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "User updated successfully!";
+                return RedirectToAction("Users");
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleUserStatus(int id)
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Users");
+            }
+
+            // Prevent deactivating own account
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (user.UserId == currentUserId)
+            {
+                TempData["ErrorMessage"] = "You cannot deactivate your own account.";
+                return RedirectToAction("Users");
+            }
+
+            user.IsActive = !user.IsActive;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"User {(user.IsActive ? "activated" : "deactivated")} successfully!";
+            return RedirectToAction("Users");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Users");
+            }
+
+            // Prevent deleting own account
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (user.UserId == currentUserId)
+            {
+                TempData["ErrorMessage"] = "You cannot delete your own account.";
+                return RedirectToAction("Users");
+            }
+
+            // Check for related data
+            if (user.Role == "Patient")
+            {
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == id);
+                if (patient != null)
+                {
+                    var hasAppointments = await _context.Appointments.AnyAsync(a => a.PatientId == patient.PatientId);
+                    if (hasAppointments)
+                    {
+                        TempData["ErrorMessage"] = "Cannot delete user with existing appointments. Deactivate instead.";
+                        return RedirectToAction("Users");
+                    }
+                    _context.Patients.Remove(patient);
+                }
+            }
+            else if (user.Role == "Doctor")
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == id);
+                if (doctor != null)
+                {
+                    var hasAppointments = await _context.Appointments.AnyAsync(a => a.DoctorId == doctor.DoctorId);
+                    if (hasAppointments)
+                    {
+                        TempData["ErrorMessage"] = "Cannot delete user with existing appointments. Deactivate instead.";
+                        return RedirectToAction("Users");
+                    }
+                    _context.Doctors.Remove(doctor);
+                }
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "User deleted successfully!";
+            return RedirectToAction("Users");
+        }
+
+        [HttpGet]
+        public IActionResult CreateUser()
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            return View(new AdminCreateUserViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser(AdminCreateUserViewModel model)
+        {
+            if (!IsAdminAuthorized())
+                return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                // Check if email exists
+                if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email already registered.");
+                    return View(model);
+                }
+
+                var user = new User
+                {
+                    Email = model.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    PhoneNumber = model.PhoneNumber,
+                    Role = model.Role,
+                    IsActive = model.IsActive,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // Create role-specific profile if needed
+                if (model.Role == "Patient")
+                {
+                    var patient = new Patient
+                    {
+                        UserId = user.UserId,
+                        DateOfBirth = DateTime.UtcNow.AddYears(-25),
+                        Gender = "Other",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Patients.Add(patient);
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["SuccessMessage"] = "User created successfully!";
+                return RedirectToAction("Users");
+            }
+
+            return View(model);
         }
 
         #endregion
@@ -646,10 +932,13 @@ namespace ClinicAppointmentSystem.Controllers
             if (!IsAdminAuthorized())
                 return RedirectToAction("Login", "Account");
 
-            ViewBag.TotalRevenue = await _context.Appointments
-                .Include(a => a.Doctor)
-                .Where(a => a.StatusId == 3)
-                .SumAsync(a => a.Doctor.ConsultationFee);
+            // SQLite cannot SUM decimal in the database.  Pull the numeric values to memory then aggregate.
+            var completedFees = await _context.Appointments
+                .Where(a => a.StatusId == 3) // Completed
+                .Select(a => a.Doctor.ConsultationFee)
+                .ToListAsync(); // materialize on client
+
+            ViewBag.TotalRevenue = (completedFees?.Any() ?? false) ? completedFees.Sum() : 0m;
 
             ViewBag.AppointmentsBySpecialization = await _context.Appointments
                 .Include(a => a.Doctor).ThenInclude(d => d.Specialization)

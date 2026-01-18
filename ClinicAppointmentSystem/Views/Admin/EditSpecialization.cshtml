@@ -1,15 +1,15 @@
 @model ClinicAppointmentSystem.Models.Specialization
 
 @{
-    ViewData["Title"] = "Add New Specialization";
+    ViewData["Title"] = "Edit Specialization";
 }
 
 <div class="container-fluid py-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1"><i class="bi bi-plus-circle me-2"></i>Add New Specialization</h2>
-            <p class="text-muted mb-0">Create a new medical specialization</p>
+            <h2 class="mb-1"><i class="bi bi-pencil me-2"></i>Edit Specialization</h2>
+            <p class="text-muted mb-0">Update specialization information</p>
         </div>
         <a asp-action="Specializations" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Back to Specializations
@@ -19,30 +19,29 @@
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>Specialization Details</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="CreateSpecialization" method="post">
+                    <form asp-action="EditSpecialization" method="post">
+                        <input type="hidden" asp-for="SpecializationId" />
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">Specialization Name <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" placeholder="e.g., Cardiology, Dermatology, Pediatrics" />
+                            <input asp-for="Name" class="form-control" />
                             <span asp-validation-for="Name" class="text-danger"></span>
-                            <small class="text-muted">Enter a unique name for this specialization</small>
                         </div>
 
                         <div class="mb-4">
                             <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Brief description of what this specialization covers..."></textarea>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
-                            <small class="text-muted">Optional: Describe the focus area of this specialization</small>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-check-circle me-1"></i> Create Specialization
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="bi bi-check-circle me-1"></i> Update Specialization
                             </button>
                             <a asp-action="Specializations" class="btn btn-outline-secondary btn-lg">
                                 <i class="bi bi-x-circle me-1"></i> Cancel
@@ -52,18 +51,16 @@
                 </div>
             </div>
 
-            <!-- Help Card -->
+            <!-- Warning Card -->
             <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Tips</h6>
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Note</h6>
                 </div>
                 <div class="card-body">
-                    <ul class="small text-muted mb-0">
-                        <li>Use clear, standard medical specialization names</li>
-                        <li>Each specialization name must be unique</li>
-                        <li>Doctors will be assigned to specializations during registration</li>
-                        <li>Patients will filter doctors by specialization when booking</li>
-                    </ul>
+                    <p class="small text-muted mb-0">
+                        Changing the specialization name will affect how it appears for all doctors
+                        currently assigned to this specialization.
+                    </p>
                 </div>
             </div>
         </div>

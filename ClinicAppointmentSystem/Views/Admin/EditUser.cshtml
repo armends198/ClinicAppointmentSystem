@@ -1,0 +1,222 @@
+﻿@model ClinicAppointmentSystem.ViewModels.AdminEditUserViewModel
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-pencil me-2"></i>Edit User</h2>
+            <p class="text-muted mb-0">Update user account information</p>
+        </div>
+        <div>
+            <a asp-action="UserDetails" asp-route-id="@Model.UserId" class="btn btn-outline-info">
+                <i class="bi bi-eye me-1"></i> View Details
+            </a>
+            <a asp-action="Users" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Users
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="EditUser" method="post">
+                        <input type="hidden" asp-for="UserId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Account Information -->
+                        <h5 class="border-bottom pb-2 mb-4 text-primary">
+                            <i class="bi bi-person me-2"></i>Account Information
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label"></label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label"></label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" readonly disabled />
+                                <small class="text-muted">Email cannot be changed</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Role & Status -->
+                        <h5 class="border-bottom pb-2 mb-4 mt-4 text-warning">
+                            <i class="bi bi-shield-lock me-2"></i>Role & Status
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Role" class="form-label"></label>
+                                <select asp-for="Role" class="form-select">
+                                    <option value="Patient">Patient</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                                <span asp-validation-for="Role" class="text-danger"></span>
+                                <small class="text-muted">Be careful when changing roles</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Account Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="text-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">Inactive</span>
+                                        }
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Changing a user's role may affect their access to different parts of the system.</li>
+                                <li>Changing from Doctor/Patient to another role will not remove their profile data.</li>
+                                <li>Deactivating a user will prevent them from logging in.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle me-1"></i> Save Changes
+                            </button>
+                            <a asp-action="Users" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- User Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-person-circle me-2"></i>User Summary</h6>
+                </div>
+                <div class="card-body text-center">
+                    @{
+                        var avatarBg = Model.Role switch
+                        {
+                            "Admin" => "bg-danger",
+                            "Doctor" => "bg-success",
+                            "Patient" => "bg-primary",
+                            _ => "bg-secondary"
+                        };
+                        var avatarIcon = Model.Role switch
+                        {
+                            "Admin" => "bi-shield-lock",
+                            "Doctor" => "bi-person-badge",
+                            "Patient" => "bi-person",
+                            _ => "bi-person"
+                        };
+                    }
+                    <div class="@avatarBg bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi @avatarIcon @avatarBg.Replace("bg-", "text-") fs-1"></i>
+                    </div>
+                    <h5>@Model.FirstName @Model.LastName</h5>
+                    <p class="text-muted mb-1">@Model.Email</p>
+                    <span class="badge @avatarBg">@Model.Role</span>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success ms-1">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger ms-1">Inactive</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Help</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="small fw-bold">Role Descriptions:</h6>
+                    <ul class="small text-muted mb-3">
+                        <li><strong>Patient:</strong> Can book appointments, view medical records</li>
+                        <li><strong>Doctor:</strong> Can manage schedule, view/update appointments</li>
+                        <li><strong>Admin:</strong> Full system access including user management</li>
+                    </ul>
+                    <h6 class="small fw-bold">Important Notes:</h6>
+                    <ul class="small text-muted mb-0">
+                        <li>You cannot change your own admin role</li>
+                        <li>Email addresses cannot be modified</li>
+                        <li>Password must be reset separately</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a asp-action="UserDetails" asp-route-id="@Model.UserId" class="btn btn-outline-info">
+                        <i class="bi bi-eye me-1"></i> View Full Details
+                    </a>
+                    <a asp-action="Users" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

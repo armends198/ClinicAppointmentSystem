@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -122,10 +122,44 @@
                                     <i class="bi bi-speedometer2 me-1"></i> Dashboard
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="bi bi-people me-1"></i> Manage Users
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminManageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-gear me-1"></i> Manage
                                 </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminManageDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                            <i class="bi bi-people me-2"></i> Users
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Doctors">
+                                            <i class="bi bi-person-badge me-2"></i> Doctors
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Patients">
+                                            <i class="bi bi-person me-2"></i> Patients
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Appointments">
+                                            <i class="bi bi-calendar-check me-2"></i> Appointments
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Specializations">
+                                            <i class="bi bi-tags me-2"></i> Specializations
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Reports">
+                                            <i class="bi bi-bar-chart me-2"></i> Reports
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         }
                     </ul>
@@ -167,6 +201,19 @@
                                         <li>
                                             <a class="dropdown-item" asp-controller="Doctor" asp-action="ManageSchedule">
                                                 <i class="bi bi-calendar-week me-2"></i> My Schedule
+                                            </a>
+                                        </li>
+                                    }
+                                    else if (Context.Session.GetString("UserRole") == "Admin")
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                                <i class="bi bi-people me-2"></i> Manage Users
                                             </a>
                                         </li>
                                     }
