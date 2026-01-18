@@ -1,0 +1,165 @@
+﻿@model IEnumerable<ClinicAppointmentSystem.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Manage Doctors";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-person-badge me-2"></i>Manage Doctors</h2>
+            <p class="text-muted mb-0">View and manage all registered doctors</p>
+        </div>
+        <div>
+            <a asp-action="CreateDoctor" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i> Add New Doctor
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Doctors Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Specialization</th>
+                                <th>License #</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doctor in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                                <i class="bi bi-person text-success fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <strong>Dr. @doctor.User.FirstName @doctor.User.LastName</strong>
+                                                <br />
+                                                <small class="text-muted">@doctor.User.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@doctor.Specialization.Name</span>
+                                    </td>
+                                    <td>@doctor.LicenseNumber</td>
+                                    <td>$@doctor.ConsultationFee.ToString("0.00")</td>
+                                    <td>
+                                        @if (doctor.User.IsActive)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactive</span>
+                                        }
+                                    </td>
+                                    <td>@doctor.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="DoctorDetails" asp-route-id="@doctor.DoctorId" class="btn btn-sm btn-outline-info" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-action="EditDoctor" asp-route-id="@doctor.DoctorId" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form asp-action="ToggleDoctorStatus" asp-route-id="@doctor.DoctorId" method="post" class="d-inline">
+                                                @if (doctor.User.IsActive)
+                                                {
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate" onclick="return confirm('Are you sure you want to deactivate this doctor?');">
+                                                        <i class="bi bi-person-slash"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Activate" onclick="return confirm('Are you sure you want to activate this doctor?');">
+                                                        <i class="bi bi-person-check"></i>
+                                                    </button>
+                                                }
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-person-badge fs-1 text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">No Doctors Found</h5>
+                    <p class="text-muted">Get started by adding your first doctor.</p>
+                    <a asp-action="CreateDoctor" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-1"></i> Add New Doctor
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Summary Card -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary">@Model.Count()</h3>
+                        <small class="text-muted">Total Doctors</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="text-success">@Model.Count(d => d.User.IsActive)</h3>
+                        <small class="text-muted">Active Doctors</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="text-danger">@Model.Count(d => !d.User.IsActive)</h3>
+                        <small class="text-muted">Inactive Doctors</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

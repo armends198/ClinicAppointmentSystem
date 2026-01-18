@@ -279,5 +279,7 @@ namespace ClinicAppointmentSystem.Controllers
             ViewBag.Specializations = await _context.Specializations.ToListAsync();
             return View(model);
         }
+
+     
     }
 }
