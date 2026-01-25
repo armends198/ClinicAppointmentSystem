@@ -161,9 +161,9 @@ ClinicAppointmentSystem/
 
 This project was developed by students from Southeast European University, Tetovo, North Macedonia:
 
-- **Endrit Misini** - Computer Science
-- **Armend Salihu** - Computer Science  
-- **Amar Mustafi** - Computer Science
+- **Endrit Abduramani** - Computer Science
+- **Armend Sejfullov** - Computer Science  
+- **Amar Ademi** - Computer Science
 
 **Course:** Programming with .NET
 
