@@ -35,5 +35,6 @@ namespace ClinicAppointmentSystem.Models
         public Specialization Specialization { get; set; }
         public ICollection<DoctorWorkingHours> WorkingHours { get; set; }
         public ICollection<Appointment> Appointments { get; set; }
+
     }
 }
