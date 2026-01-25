@@ -171,15 +171,14 @@
                     if (slots.length > 0) {
                         slots.forEach(function (slot) {
                             $('#slotsContainer').append(`
-                                        <div class="col-md-4">
-                                            <button type="button" class="btn btn-outline-primary w-100 slot-btn"
-                                                    data-slot-id="${slot.timeSlotId}"
-                                                    data-start="${slot.startTime}"
-                                                    data-end="${slot.endTime}">
-                                                ${slot.startTime}
-                                            </button>
-                                        </div>
-                                    `);
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-outline-primary w-100 slot-btn"
+                                            data-start="${slot.startTime}"
+                                            data-end="${slot.endTime}">
+                                        ${slot.startTime}
+                                    </button>
+                                </div>
+                            `);
                         });
                         $('#slotSection').show();
                     } else {
